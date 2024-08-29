@@ -1,0 +1,89 @@
+name: Java SDK Build & Release JDK21
+
+on:
+  repository_dispatch:
+    types: [tag-push]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'source tag'
+        required: true
+        type: string
+env:
+  GITHUB_ACTOR: ${{ github.actor }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GITHUB_REPOSITORY: ${{ github.repository }}
+jobs:
+  validation:
+    name: "gradle-wrapper-validation"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gradle/actions/wrapper-validation@v3
+
+  tagging:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ env.tag }}
+      version: ${{ env.version }}
+      prerelease: ${{ env.prerelease }}
+    steps:
+      - name: Use the tag from the event
+        id: tag
+        run: |
+          TAG="${{ inputs.tag || github.event.client_payload.tag }}"
+          VERSION=${TAG#v}
+          echo "TAG from event: ${TAG}"
+          echo "tag=${TAG}" >> $GITHUB_ENV
+          echo "version=${VERSION}">> $GITHUB_ENV
+          if [[ "${TAG}" == *-* ]]; then echo "prerelease=true" >> $GITHUB_ENV; else echo "prerelease=false" >> $GITHUB_ENV; fi
+
+
+  publish:
+    needs:
+      - validation
+      - tagging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout proto repository
+        run: |
+          git clone https://github.com/KodyPay/kp-protocols-clientsdk.git proto-repo
+          mv proto-repo/src .
+          rm -r proto-repo
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'adopt'
+      - name: Setup & Build Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          arguments: build -s --scan -Pversion=${{ needs.tagging.outputs.version }}
+      - name: Setup git config
+        run: |
+          echo "Setting up Git user information"
+          git config --global user.name "${{github.actor}}"
+          git config --global user.email "<>"
+      - name: Publish candidate
+        if: ${{ needs.tagging.outputs.prerelease }}
+        run: ./gradlew candidate -Prelease.version=${{ needs.tagging.outputs.version }} -s
+      - name: Publish release
+        if: ${{ !needs.tagging.outputs.prerelease }}
+        run: ./gradlew final -Prelease.version=${{ needs.tagging.outputs.version }} -s
+
+  release:
+    needs:
+      - tagging
+      - publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release
+        uses: ncipollo/release-action@v1.14.0
+        with:
+          name: "${{ needs.tagging.outputs.tag }}"
+          tag: "${{ needs.tagging.outputs.tag }}"
+          omitBody: true
+          draft: false
+          prerelease: ${{ needs.tagging.outputs.prerelease }}
+          makeLatest: ${{ !needs.tagging.outputs.prerelease }}
