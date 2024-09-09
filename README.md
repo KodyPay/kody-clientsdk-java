@@ -9,8 +9,7 @@ applications.
 ## Requirements
 
 - Java 21 or later
-- Github account
-- Gradle
+- Gradle or Maven
 
 ## Installation
 
@@ -19,30 +18,22 @@ applications.
 Add the following configuration to your `build.gradle` file:
 
 ```kts
-repositories {
-    maven {
-        name = "GitHubPackages"
-        url = uri("https://maven.pkg.github.com/KodyPay/kody-clientsdk-java-dev/")
-        credentials {
-            username = System.getenv("GITHUB_USERNAME")
-            password = System.getenv("GITHUB_TOKEN")
-        }
-    }
-}
-
 dependencies {
-    implementation("com.kodypay.api.grpc:kody-clientsdk-java:0.0.1")
+    implementation("com.kodypay.grpc:kody-clientsdk-java:0.0.1")
 }
 ```
 
-To authenticate with GitHub Packages, you need to create a personal access token with the `read:packages` scope and set it as an environment variable:
+### Maven
 
-```bash
-export GITHUB_USERNAME=<your-github-username>
-export GITHUB_TOKEN=<your-github-token>
+Add the following configuration to your `pom.xml` file:
+
+```xml
+<dependency>
+    <groupId>com.kodypay.grpc</groupId>
+    <artifactId>kody-clientsdk-java</artifactId>
+    <version>0.0.1</version>
+</dependency>
 ```
-
-Refer to the [GitHub documentation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) for more information about the token.
 
 ## Samples
 

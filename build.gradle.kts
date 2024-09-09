@@ -1,17 +1,17 @@
 import com.google.protobuf.gradle.*
+import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
     id("java-library")
     id("com.google.protobuf") version "0.9.4"
-    id("maven-publish")
     id("nebula.release") version "19.0.10"
+    id("com.vanniktech.maven.publish") version "0.28.0"
 }
 
 description = "Kody Java gRPC Client"
-group = "com.kodypay.api.grpc"
+group = "com.kodypay.grpc"
 
 val protobufVersion = "4.27.3"
-val semverVersion = "0.9.0"
 val grpcVersion = "1.66.0"
 val annotationsVersion = "6.0.53"
 
@@ -59,21 +59,32 @@ protobuf {
     }
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("gpr") {
-            from(components["java"])
-        }
-    }
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/${System.getenv("GITHUB_REPOSITORY")}")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
+mavenPublishing {
+    pom {
+        name = "kody-clientsdk-java"
+        description = "Kody Java gRPC Client"
+        url = "https://github.com/KodyPay/kody-clientsdk-java"
+        inceptionYear = "2024"
+        licenses{
+            license {
+                name = "MIT License"
+                url = "https://opensource.org/licenses/MIT"
             }
         }
+        developers {
+            developer {
+                id = "kodypay"
+                name = "Kody"
+            }
+        }
+        scm {
+            url = "https://github.com/KodyPay/kody-clientsdk-java"
+            connection = "scm:git:git://github.com/KodyPay/kody-clientsdk-java.git"
+            developerConnection = "scm:git:ssh://github.com/KodyPay/kody-clientsdk-java.git"
+        }
+
+        signAllPublications()
+        publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     }
 }
 
