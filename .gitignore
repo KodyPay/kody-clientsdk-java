@@ -10,3 +10,4 @@ proto-repo/
 
 .DS_Store
 /src/
+/test.env
