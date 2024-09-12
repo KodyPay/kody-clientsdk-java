@@ -8,13 +8,7 @@ This project demonstrates how to use the Kody Java gRPC client to communicate wi
 
 ## Installation
 
-### Environment Variables
-To authenticate with GitHub Packages, you need to create a personal access token with the `read:packages` scope and set it as an environment variable:
-
-```bash
-export GITHUB_USERNAME=<your-github-username>
-export GITHUB_TOKEN=<your-github-token>
-```
+The commands below assume that your current working directory is `samples`.
 
 ### Gradle
 Build the samples subproject with gradle:
@@ -37,10 +31,15 @@ storeId=Use your Kody store ID
 Below are the available examples you can find in the `samples` subproject:
 - Online payments
   - `EcomBlockingJavaClient` 
-  - `EcomNonBlockingJavaClient` 
+  - `EcomAsyncJavaClient` 
 - Terminal payment
-  - `TerminalBlockingJavaClient` 
-  - `TerminalNonBlockingJavaClient` 
+  - `TerminalJavaClient` 
+
+For your convenience, there is also a CLI with limited capabilities, which you can run as
+```shell
+java -jar build/libs/samples-*
+```
+
 
 ## Troubleshooting
 
@@ -48,5 +47,4 @@ If you encounter issues, ensure:
 
 - Both main project and subproject `samples` build successfully
 - Your `config.properties` is correctly filled out.
-- Make sure you have the correct `GITHUB_TOKEN` environment variable set.
 - Contact Kody support or tech team
