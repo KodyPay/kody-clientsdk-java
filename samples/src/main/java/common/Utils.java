@@ -1,6 +1,7 @@
 package common;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.jline.reader.LineReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +12,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 public class Utils {
-    private static final String CONFIG_FILE = "samples/src/main/resources/config.properties";
+    private static final String CONFIG_FILE = "config.properties";
     private static final Logger LOG = LoggerFactory.getLogger(Utils.class.getName());
 
     public static Properties loadProperties() {
@@ -30,5 +31,12 @@ public class Utils {
 
     public static String generateOrderId() {
         return RandomStringUtils.randomAlphanumeric(8);
+    }
+
+    public static String readInput(LineReader reader, String prompt, String defaultValue) {
+        var userInput = reader.readLine(prompt);
+        if (userInput == null  || userInput.isBlank()) {
+            userInput = defaultValue;
+        } return userInput;
     }
 }

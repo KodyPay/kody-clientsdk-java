@@ -56,6 +56,7 @@ public class PaymentClient {
                 .keepAliveTimeout(TIMEOUT_MS, TimeUnit.MILLISECONDS)
                 .intercept(MetadataUtils.newAttachHeadersInterceptor(getMetadata()))
                 .build();
+
         this.terminalServiceStub = KodyPayTerminalServiceGrpc.newStub(channel);
         this.ecomServiceStub = KodyEcomPaymentsServiceGrpc.newStub(channel);
     }
