@@ -107,7 +107,7 @@ public class EcomAsyncJavaClient {
             input.setOrderId(readInput(reader, String.format("Order id [%s]: ", orderId), orderId));
 
             var paymentReference = input.getPaymentReference();
-            input.setPaymentReference(readInput(reader, String.format("Order id [%s]: ", paymentReference), paymentReference));
+            input.setPaymentReference(readInput(reader, String.format("Payment reference [%s]: ", paymentReference), paymentReference));
         }
     }
 
