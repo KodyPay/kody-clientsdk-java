@@ -15,22 +15,24 @@ public class KodyDemo {
 
         while (true) {
             try {
-                String line = reader.readLine("\n=== Main Menu ===\n" +
-                        " 1. Get Ecom payments (async)\n" +
-                        " 2. Send an Ecom payment (async)\n" +
-                        " 3. List terminals (blocking)\n" +
-                        " 4. Send a terminal payment (blocking)\n" +
-                        " 5. Get terminal payment details (blocking)\n" +
-                        "99. Exit\n" +
-                        "Choose an option: ");
+                String line = reader.readLine("""
+                        
+                        === Main Menu ===
+                         1. Send an Ecom payment
+                         2. Get Ecom payments
+                         3. List terminals
+                         4. Send a terminal payment
+                         5. Get terminal payment details
+                        99. Exit
+                        Choose an option:\s""");
 
                 switch (line.toLowerCase()) {
                     case "1":
-                        new EcomAsyncJavaClient.GetPaymentsCommand().execute();
-                        break;
-                    case "2":
                         new EcomAsyncJavaClient.SendPaymentCommand().gatherInput();
                         new EcomAsyncJavaClient.SendPaymentCommand().execute();
+                        break;
+                    case "2":
+                        new EcomAsyncJavaClient.GetPaymentsCommand().execute();
                         break;
                     case "3":
                         new TerminalJavaClient.GetTerminalsCommand().execute();
