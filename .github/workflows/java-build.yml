@@ -82,7 +82,7 @@ jobs:
         if: ${{ needs.tagging.outputs.prerelease == 'true' }}
         run: ./gradlew candidate -Prelease.version=${{ needs.tagging.outputs.version }} -s
       - name: Publish release
-        if: ${{ !needs.tagging.outputs.prerelease == 'false' }}
+        if: ${{ needs.tagging.outputs.prerelease == 'false' }}
         run: ./gradlew final -Prelease.version=${{ needs.tagging.outputs.version }} -s
 
   release:
