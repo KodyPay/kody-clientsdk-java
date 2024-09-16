@@ -80,10 +80,10 @@ jobs:
           echo "This is a prerelease: ${{ needs.tagging.outputs.prerelease }}"
       - name: Publish candidate
         if: ${{ needs.tagging.outputs.prerelease == 'true' }}
-        run: ./gradlew candidate -Prelease.version=${{ needs.tagging.outputs.version }} -s
+        run: ./gradlew candidate -Prelease.version=${{ needs.tagging.outputs.version }} -s --info
       - name: Publish release
         if: ${{ needs.tagging.outputs.prerelease == 'false' }}
-        run: ./gradlew final -Prelease.version=${{ needs.tagging.outputs.version }} -s
+        run: ./gradlew final -Prelease.version=${{ needs.tagging.outputs.version }} -s --info
 
   release:
     needs:
