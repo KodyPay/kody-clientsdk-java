@@ -79,10 +79,10 @@ jobs:
         run: |
           echo "This is a prerelease: ${{ needs.tagging.outputs.prerelease }}"
       - name: Publish candidate
-        if: ${{ needs.tagging.outputs.prerelease }}
+        if: ${{ needs.tagging.outputs.prerelease == 'true' }}
         run: ./gradlew candidate -Prelease.version=${{ needs.tagging.outputs.version }} -s
       - name: Publish release
-        if: ${{ !needs.tagging.outputs.prerelease }}
+        if: ${{ !needs.tagging.outputs.prerelease == 'false' }}
         run: ./gradlew final -Prelease.version=${{ needs.tagging.outputs.version }} -s
 
   release:
@@ -98,5 +98,5 @@ jobs:
           tag: "${{ needs.tagging.outputs.tag }}"
           omitBody: true
           draft: false
-          prerelease: ${{ needs.tagging.outputs.prerelease }}
-          makeLatest: ${{ !needs.tagging.outputs.prerelease }}
+          prerelease: ${{ needs.tagging.outputs.prerelease == 'true' }}
+          makeLatest: ${{ needs.tagging.outputs.prerelease == 'false' }}
