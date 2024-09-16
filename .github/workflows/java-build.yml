@@ -40,6 +40,7 @@ jobs:
             echo "prerelease=true" >> $GITHUB_OUTPUT
           else 
             echo "prerelease=false" >> $GITHUB_OUTPUT
+          fi
 
 
   publish:
