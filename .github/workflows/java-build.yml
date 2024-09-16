@@ -24,19 +24,22 @@ jobs:
   tagging:
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{ env.tag }}
-      version: ${{ env.version }}
-      prerelease: ${{ env.prerelease }}
+      tag: ${{ steps.set_tag.outputs.tag }}
+      version: ${{ steps.set_tag.outputs.version }}
+      prerelease: ${{ steps.set_tag.outputs.prerelease }}
     steps:
       - name: Use the tag from the event
-        id: tag
+        id: set_tag
         run: |
-          TAG="${{ inputs.tag || github.event.client_payload.tag }}"
+          TAG="${{ github.event.client_payload.tag }}"
           VERSION=${TAG#v}
           echo "TAG from event: ${TAG}"
-          echo "tag=${TAG}" >> $GITHUB_ENV
-          echo "version=${VERSION}">> $GITHUB_ENV
-          if [[ "${TAG}" == *-* ]]; then echo "prerelease=true" >> $GITHUB_ENV; else echo "prerelease=false" >> $GITHUB_ENV; fi
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          if [[ "${TAG}" == *-* ]]; then 
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+          else 
+            echo "prerelease=false" >> $GITHUB_OUTPUT
 
 
   publish:
@@ -71,6 +74,9 @@ jobs:
           echo "Setting up Git user information"
           git config --global user.name "${{github.actor}}"
           git config --global user.email "<>"
+      - name: Sanity check
+        run: |
+          echo "This is a prerelease: ${{ needs.tagging.outputs.prerelease }}"
       - name: Publish candidate
         if: ${{ needs.tagging.outputs.prerelease }}
         run: ./gradlew candidate -Prelease.version=${{ needs.tagging.outputs.version }} -s
