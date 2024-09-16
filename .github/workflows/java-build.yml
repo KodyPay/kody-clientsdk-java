@@ -31,7 +31,7 @@ jobs:
       - name: Use the tag from the event
         id: set_tag
         run: |
-          TAG="${{ github.event.client_payload.tag }}"
+          TAG="${{ inputs.tag || github.event.client_payload.tag }}"
           VERSION=${TAG#v}
           echo "TAG from event: ${TAG}"
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
