@@ -72,7 +72,7 @@ public class PaymentClient {
         return metadata;
     }
 
-    public CompletableFuture<PayResponse> sendPayment(String terminalId, BigDecimal amount, java.util.function.Consumer<String> onPending) {
+    public CompletableFuture<PayResponse> sendPayment(boolean showTips, String terminalId, BigDecimal amount, java.util.function.Consumer<String> onPending) {
         LOG.debug("sendPayment: storeId={}, amount={}, terminalId={} (address: {})", payStoreId, amount, terminalId, inetSocketAddress);
 
         CompletableFuture<PayResponse> future = new CompletableFuture<>();
@@ -80,6 +80,7 @@ public class PaymentClient {
                 .setStoreId(payStoreId.toString())
                 .setAmount(amount.toPlainString())
                 .setTerminalId(terminalId)
+                .setShowTips(showTips)
                 .build(), new StreamObserver<>() {
             PayResponse response;
 

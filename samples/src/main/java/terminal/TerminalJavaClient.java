@@ -30,7 +30,6 @@ public class TerminalJavaClient {
     private final PaymentClient client;
     private String exTerminalId;
     private final long timeout = 1;
-
     public TerminalJavaClient() {
         Properties properties = loadProperties();
         var address = URI.create(properties.getProperty("address", "http://localhost"));
@@ -43,10 +42,10 @@ public class TerminalJavaClient {
         client = new PaymentClient(address, storeId, apiKey);
     }
 
-    public PayResponse sendPayment(String amountStr) throws ExecutionException, InterruptedException, TimeoutException {
+    public PayResponse sendPayment(String amountStr, boolean showTips) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Sending payment for amount: {} to terminal: {}", amountStr, exTerminalId);
         BigDecimal amount = new BigDecimal(amountStr);
-        CompletableFuture<PayResponse> response = client.sendPayment(exTerminalId, amount, orderId -> {
+        CompletableFuture<PayResponse> response = client.sendPayment(showTips, exTerminalId, amount, orderId-> {
             LOG.info("onPending: orderId={}", orderId);
             // optionally cancel payment after delay
             Executor delayed = CompletableFuture.delayedExecutor(30L, TimeUnit.SECONDS);
@@ -103,9 +102,11 @@ public class TerminalJavaClient {
     public static void main(String[] args) throws Exception {
         String amountStr = "1.00";
 
+        boolean isShowTips = true;
+
         listTerminals();
 
-        var orderId = terminalClient.sendPayment(amountStr).getOrderId();
+        var orderId = terminalClient.sendPayment(amountStr, isShowTips).getOrderId();
         LOG.info("Completed order: {}", orderId);
 
         var status = terminalClient.getDetails(orderId).getStatus();
@@ -149,7 +150,7 @@ public class TerminalJavaClient {
             listTerminals();
             String orderId = null;
             try {
-                orderId = terminalClient.sendPayment(String.format("%.2f", (float) input.getAmount()/100)).getOrderId();
+                orderId = terminalClient.sendPayment(String.format("%.2f", (float) input.getAmount()/100), input.isShowTips()).getOrderId();
                 LOG.info("Completed order: {}", orderId);
 
                 var status = terminalClient.getDetails(orderId).getStatus();
@@ -162,8 +163,8 @@ public class TerminalJavaClient {
         @Override
         public void gatherInput() {
             LineReader reader = LineReaderBuilder.builder().build();
-
             input.setAmount(Long.parseLong(reader.readLine("\nAmount (in minor units, only digits): ")));
+            input.setShowTips(Boolean.parseBoolean(reader.readLine("\n Do you want to enable Terminal to show Tips (true/false): ")));
         }
     }
 
