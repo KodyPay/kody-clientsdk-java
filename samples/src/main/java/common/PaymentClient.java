@@ -72,7 +72,11 @@ public class PaymentClient {
         return metadata;
     }
 
-    public CompletableFuture<PayResponse> sendPayment(boolean showTips, String terminalId, BigDecimal amount, java.util.function.Consumer<String> onPending) {
+    public CompletableFuture<PayResponse> sendPayment(String terminalId, BigDecimal amount, java.util.function.Consumer<String> onPending) {
+        return sendPayment(terminalId, amount, false, onPending);
+    }
+
+    public CompletableFuture<PayResponse> sendPayment(String terminalId, BigDecimal amount, boolean showTips, java.util.function.Consumer<String> onPending) {
         LOG.debug("sendPayment: storeId={}, amount={}, terminalId={} (address: {})", payStoreId, amount, terminalId, inetSocketAddress);
 
         CompletableFuture<PayResponse> future = new CompletableFuture<>();

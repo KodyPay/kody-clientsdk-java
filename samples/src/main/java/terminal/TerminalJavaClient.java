@@ -9,6 +9,7 @@ import com.kodypay.grpc.pay.v1.PaymentStatus;
 import com.kodypay.grpc.pay.v1.Terminal;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.impl.completer.StringsCompleter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,10 +43,14 @@ public class TerminalJavaClient {
         client = new PaymentClient(address, storeId, apiKey);
     }
 
+    public PayResponse sendPayment(String amountStr) throws ExecutionException, InterruptedException, TimeoutException {
+       return sendPayment(amountStr, false);
+    }
+
     public PayResponse sendPayment(String amountStr, boolean showTips) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Sending payment for amount: {} to terminal: {}", amountStr, exTerminalId);
         BigDecimal amount = new BigDecimal(amountStr);
-        CompletableFuture<PayResponse> response = client.sendPayment(showTips, exTerminalId, amount, orderId-> {
+        CompletableFuture<PayResponse> response = client.sendPayment(exTerminalId, amount, showTips, orderId-> {
             LOG.info("onPending: orderId={}", orderId);
             // optionally cancel payment after delay
             Executor delayed = CompletableFuture.delayedExecutor(30L, TimeUnit.SECONDS);
@@ -101,8 +106,7 @@ public class TerminalJavaClient {
 
     public static void main(String[] args) throws Exception {
         String amountStr = "1.00";
-
-        boolean isShowTips = true;
+        boolean isShowTips = false;
 
         listTerminals();
 
@@ -164,7 +168,9 @@ public class TerminalJavaClient {
         public void gatherInput() {
             LineReader reader = LineReaderBuilder.builder().build();
             input.setAmount(Long.parseLong(reader.readLine("\nAmount (in minor units, only digits): ")));
-            input.setShowTips(Boolean.parseBoolean(reader.readLine("\n Do you want to enable Terminal to show Tips (true/false): ")));
+
+            LineReader booleanReader = LineReaderBuilder.builder().completer(new StringsCompleter("true", "false")) .build();
+            input.setShowTips(Boolean.parseBoolean(booleanReader.readLine("\n Do you want to enable Terminal to show Tips (true/false): ")));
         }
     }
 
