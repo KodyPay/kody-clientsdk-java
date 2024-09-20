@@ -4,7 +4,7 @@ plugins {
 
 description = "Kody Java gRPC Client Sample"
 
-val kodyClientVersion by extra("0.0.1")
+val kodyClientVersion by extra("0.0.2")
 
 val protobufVersion by extra("4.27.3")
 val grpcVersion by extra("1.66.0")
