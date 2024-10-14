@@ -89,8 +89,8 @@ jobs:
         with:
           name: kody-clientsdk-java.jar
           path: |
-            build/lib/kody-clientsdk-java*.jar
-            !build/lib/kody-clientsdk-java*-sources.jar
+            **/build/libs/kody-clientsdk-java-*.jar            
+            !**/build/libs/kody-clientsdk-java*-sources.jar
 
   release:
     needs:
