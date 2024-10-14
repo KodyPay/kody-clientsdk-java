@@ -84,6 +84,13 @@ jobs:
       - name: Publish release
         if: ${{ needs.tagging.outputs.prerelease == 'false' }}
         run: ./gradlew final -Prelease.version=${{ needs.tagging.outputs.version }} -s --info
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: kody-clientsdk-java.jar
+          path: |
+            build/lib/kody-clientsdk-java*.jar
+            !build/lib/kody-clientsdk-java*-sources.jar
 
   release:
     needs:
