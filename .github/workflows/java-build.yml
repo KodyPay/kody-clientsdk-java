@@ -48,6 +48,8 @@ jobs:
       - validation
       - tagging
     runs-on: ubuntu-latest
+    outputs:
+      artifact: ${{ steps.artifact-upload-step.outputs.artifact-url }}
     env:
       ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}
       ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}
@@ -85,6 +87,7 @@ jobs:
         if: ${{ needs.tagging.outputs.prerelease == 'false' }}
         run: ./gradlew final -Prelease.version=${{ needs.tagging.outputs.version }} -s --info
       - name: Upload artifact
+        id: artifact-upload-step
         uses: actions/upload-artifact@v4.4.3
         with:
           name: kody-clientsdk-java.jar
@@ -107,3 +110,4 @@ jobs:
           draft: false
           prerelease: ${{ needs.tagging.outputs.prerelease == 'true' }}
           makeLatest: ${{ needs.tagging.outputs.prerelease == 'false' }}
+          artifacts: ${{ needs.publish.outputs.artifact }}
