@@ -3,7 +3,6 @@ This project demonstrates how to use the Kody Java gRPC client to communicate wi
 
 ## Requirements
 - Java 17 or later
-- Github account
 - Gradle
 
 ## Installation
