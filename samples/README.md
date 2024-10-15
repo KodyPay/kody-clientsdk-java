@@ -2,7 +2,7 @@
 This project demonstrates how to use the Kody Java gRPC client to communicate with Kody payments gateway.
 
 ## Requirements
-- Java 21 or later
+- Java 17 or later
 - Github account
 - Gradle
 
