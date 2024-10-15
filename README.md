@@ -8,7 +8,7 @@ applications.
 
 ## Requirements
 
-- Java 21 or later
+- Java 17 or later
 - Gradle or Maven
 
 ## Installation
@@ -19,7 +19,7 @@ Add the following configuration to your `build.gradle` file:
 
 ```kts
 dependencies {
-    implementation("com.kodypay.grpc:kody-clientsdk-java:0.0.1")
+    implementation("com.kodypay.grpc:kody-clientsdk-java:0.0.3")
 }
 ```
 
@@ -31,7 +31,7 @@ Add the following configuration to your `pom.xml` file:
 <dependency>
     <groupId>com.kodypay.grpc</groupId>
     <artifactId>kody-clientsdk-java</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.3</version>
 </dependency>
 ```
 
