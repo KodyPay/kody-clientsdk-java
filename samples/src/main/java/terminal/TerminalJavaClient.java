@@ -96,7 +96,7 @@ public class TerminalJavaClient {
                         return defaultTerminalId == null || t.getTerminalId().equals(defaultTerminalId);
                     })
                     .findFirst()
-                    .orElse(it.getFirst())
+                    .orElse(it.get(0))
                     .getTerminalId();
             LOG.info("Selected terminal: {}", exTerminalId);
         });
