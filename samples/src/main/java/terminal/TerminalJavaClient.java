@@ -3,10 +3,10 @@ package terminal;
 import cli.Command;
 import cli.PaymentCommand;
 import cli.PaymentInput;
-import common.PaymentClient;
 import com.kodypay.grpc.pay.v1.PayResponse;
 import com.kodypay.grpc.pay.v1.PaymentStatus;
 import com.kodypay.grpc.pay.v1.Terminal;
+import common.PaymentClient;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.impl.completer.StringsCompleter;
@@ -31,6 +31,7 @@ public class TerminalJavaClient {
     private final PaymentClient client;
     private String exTerminalId;
     private final long timeout = 1;
+
     public TerminalJavaClient() {
         Properties properties = loadProperties();
         var address = URI.create(properties.getProperty("address", "http://localhost"));
@@ -43,14 +44,10 @@ public class TerminalJavaClient {
         client = new PaymentClient(address, storeId, apiKey);
     }
 
-    public PayResponse sendPayment(String amountStr) throws ExecutionException, InterruptedException, TimeoutException {
-       return sendPayment(amountStr, false);
-    }
-
     public PayResponse sendPayment(String amountStr, boolean showTips) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Sending payment for amount: {} to terminal: {}", amountStr, exTerminalId);
         BigDecimal amount = new BigDecimal(amountStr);
-        CompletableFuture<PayResponse> response = client.sendPayment(exTerminalId, amount, showTips, orderId-> {
+        CompletableFuture<PayResponse> response = client.sendPayment(exTerminalId, amount, showTips, orderId -> {
             LOG.info("onPending: orderId={}", orderId);
             // optionally cancel payment after delay
             Executor delayed = CompletableFuture.delayedExecutor(30L, TimeUnit.SECONDS);
@@ -92,9 +89,7 @@ public class TerminalJavaClient {
         response.thenAccept(it -> {
             this.exTerminalId = it.stream()
                     .filter(Terminal::getOnline)
-                    .filter(t -> {
-                        return defaultTerminalId == null || t.getTerminalId().equals(defaultTerminalId);
-                    })
+                    .filter(t -> defaultTerminalId == null || t.getTerminalId().equals(defaultTerminalId))
                     .findFirst()
                     .orElse(it.get(0))
                     .getTerminalId();
@@ -105,7 +100,9 @@ public class TerminalJavaClient {
     }
 
     public static void main(String[] args) throws Exception {
-        String amountStr = "1.00";
+        String amountStr = "3.14";
+
+        //Set to true to show tips on the terminal
         boolean isShowTips = false;
 
         listTerminals();
@@ -152,9 +149,9 @@ public class TerminalJavaClient {
         @Override
         public void execute() {
             listTerminals();
-            String orderId = null;
+            String orderId;
             try {
-                orderId = terminalClient.sendPayment(String.format("%.2f", (float) input.getAmount()/100), input.isShowTips()).getOrderId();
+                orderId = terminalClient.sendPayment(String.format("%.2f", (float) input.getAmount() / 100), input.isShowTips()).getOrderId();
                 LOG.info("Completed order: {}", orderId);
 
                 var status = terminalClient.getDetails(orderId).getStatus();
@@ -169,7 +166,7 @@ public class TerminalJavaClient {
             LineReader reader = LineReaderBuilder.builder().build();
             input.setAmount(Long.parseLong(reader.readLine("\nAmount (in minor units, only digits): ")));
 
-            LineReader booleanReader = LineReaderBuilder.builder().completer(new StringsCompleter("true", "false")) .build();
+            LineReader booleanReader = LineReaderBuilder.builder().completer(new StringsCompleter("true", "false")).build();
             input.setShowTips(Boolean.parseBoolean(booleanReader.readLine("\n Do you want to enable Terminal to show Tips (true/false): ")));
         }
     }
