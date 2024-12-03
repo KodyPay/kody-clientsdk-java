@@ -7,6 +7,7 @@ import com.kodypay.grpc.pay.v1.*;
 import common.PaymentClient;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.impl.completer.EnumCompleter;
 import org.jline.reader.impl.completer.StringsCompleter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -197,7 +198,8 @@ public class TerminalJavaClient {
             LineReader booleanReader = LineReaderBuilder.builder().completer(new StringsCompleter("true", "false")).build();
             input.setShowTips(Boolean.parseBoolean(booleanReader.readLine("\n Do you want to enable Terminal to show Tips (true/false): ")));
 
-            LineReader paymentMethodTypeReader = LineReaderBuilder.builder().build();
+            LineReader paymentMethodTypeReader = LineReaderBuilder.builder()
+                    .completer(new EnumCompleter(PaymentMethodType.class)).build();
             input.setPaymentMethodType(PaymentMethodType.valueOf(paymentMethodTypeReader.readLine("\nChoose payment methode type (CARD, ALIPAY, WECHAT): ")));
         }
     }
