@@ -12,7 +12,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 public class Utils {
-    private static final String CONFIG_FILE = "samples/config.properties";
+    private static final String CONFIG_FILE = "config.properties";
     private static final Logger LOG = LoggerFactory.getLogger(Utils.class.getName());
 
     public static Properties loadProperties() {
