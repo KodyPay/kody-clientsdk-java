@@ -71,7 +71,6 @@ public class TerminalJavaClient {
     }
 
     public RefundResponse requestRefund(String amountStr, String orderId) throws ExecutionException, InterruptedException, TimeoutException {
-        // Waiting for payment to complete
         Executor delayed = CompletableFuture.delayedExecutor(5L, TimeUnit.SECONDS);
 
         CompletableFuture<RefundResponse> completableFutureCompletableFuture = CompletableFuture.supplyAsync(() -> {

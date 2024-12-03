@@ -40,6 +40,7 @@ public class EcomBlockingJavaClient {
 
         // Wait for payment to be complete before refunding it
         do {
+            LOG.info("Waiting for online payment to complete");
             Thread.sleep(5000);
             payment = ecomBlockingJavaClient
                     .getPaymentsBlocking()
