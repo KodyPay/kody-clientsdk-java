@@ -81,9 +81,9 @@ public class TerminalJavaClient {
             return client.requestRefund(amount, orderId).toCompletableFuture().join();
         }, delayed);
 
-        completableFutureCompletableFuture.thenAccept(res -> LOG.info("Refunded payment: {} = {}", orderId, dump(res)));
+        refundResponseFuture.thenAccept(res -> LOG.info("Refunded payment: {} = {}", orderId, dump(res)));
 
-        return completableFutureCompletableFuture.get(timeout, TimeUnit.MINUTES);
+        return refundResponseFuture.get(timeout, TimeUnit.MINUTES);
     }
 
     public PayResponse getDetails(String orderId) throws ExecutionException, InterruptedException, TimeoutException {
