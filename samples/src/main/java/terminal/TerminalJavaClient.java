@@ -74,7 +74,7 @@ public class TerminalJavaClient {
     public RefundResponse requestRefund(String amountStr, String orderId) throws ExecutionException, InterruptedException, TimeoutException {
         Executor delayed = CompletableFuture.delayedExecutor(5L, TimeUnit.SECONDS);
 
-        CompletableFuture<RefundResponse> completableFutureCompletableFuture = CompletableFuture.supplyAsync(() -> {
+        CompletableFuture<RefundResponse> refundResponseFuture = CompletableFuture.supplyAsync(() -> {
             LOG.info("Requesting refund for amount: {} for orderId: {}", amountStr, orderId);
 
             BigDecimal amount = new BigDecimal(amountStr);
