@@ -1,10 +1,11 @@
 package ecom;
 
-import cli.EcomPaymentInput;
 import cli.Command;
+import cli.EcomPaymentInput;
 import cli.PaymentCommand;
-import com.kodypay.grpc.ecom.v1.*;
 import com.kodypay.grpc.ecom.v1.GetPaymentsResponse.Response.PaymentDetails;
+import com.kodypay.grpc.ecom.v1.PaymentInitiationResponse;
+import com.kodypay.grpc.ecom.v1.RefundResponse;
 import common.CurrencyEnum;
 import common.PaymentClient;
 import org.jline.reader.LineReader;
@@ -44,15 +45,25 @@ public class EcomAsyncJavaClient {
         String paymentReference = generatePaymentReference();
         String orderId = generateOrderId();
         String currency = CurrencyEnum.HKD.name();
-        return sendPaymentAsync(amount, paymentReference, currency, orderId);
+        return sendPaymentAsync(paymentReference, amount, currency, orderId);
     }
 
-    private CompletableFuture<PaymentInitiationResponse> sendPaymentAsync(long amount, String currency, String paymentReference, String orderId) {
+    private CompletableFuture<PaymentInitiationResponse> sendPaymentAsync(String paymentReference, long amount, String currency, String orderId) {
         LOG.info("Initiating payment for amount: {}", amount);
 
         return client.sendOnlinePayment(paymentReference, amount, currency, orderId, "returnUrl")
                 .thenApply(res -> {
                     LOG.info("Sent Online Payment - Payment Id: {}, Payment URL: {}", res.getResponse().getPaymentId(), res.getResponse().getPaymentUrl());
+                    return res;
+                });
+    }
+
+    CompletableFuture<RefundResponse> requestRefundAsync(String paymentId, long amount) {
+        LOG.info("Request refund for amount: {}", amount);
+
+        return client.requestOnlineRefund(paymentId, amount)
+                .thenApply(res -> {
+                    LOG.info("Requested Online Refund - Response: {}", res);
                     return res;
                 });
     }
@@ -87,7 +98,7 @@ public class EcomAsyncJavaClient {
 
         @Override
         public void execute() {
-            asyncClient.sendPaymentAsync(input.getAmount(), input.getCurrency(), input.getPaymentReference(), input.getOrderId());
+            asyncClient.sendPaymentAsync(input.getPaymentReference(), input.getAmount(), input.getCurrency(), input.getOrderId());
         }
 
         @Override

@@ -4,17 +4,11 @@ import com.kodypay.grpc.ecom.v1.*;
 import com.kodypay.grpc.ecom.v1.GetPaymentsResponse.Response.PaymentDetails;
 import com.kodypay.grpc.ecom.v1.KodyEcomPaymentsServiceGrpc.KodyEcomPaymentsServiceStub;
 import com.kodypay.grpc.ecom.v1.PaymentInitiationRequest.ExpirySettings;
-import com.kodypay.grpc.pay.v1.CancelRequest;
-import com.kodypay.grpc.pay.v1.CancelResponse;
-import com.kodypay.grpc.pay.v1.KodyPayTerminalServiceGrpc;
-import com.kodypay.grpc.pay.v1.KodyPayTerminalServiceGrpc.KodyPayTerminalServiceStub;
-import com.kodypay.grpc.pay.v1.PayRequest;
-import com.kodypay.grpc.pay.v1.PayResponse;
+import com.kodypay.grpc.pay.v1.*;
 import com.kodypay.grpc.pay.v1.PaymentDetailsRequest;
-import com.kodypay.grpc.pay.v1.PaymentStatus;
-import com.kodypay.grpc.pay.v1.Terminal;
-import com.kodypay.grpc.pay.v1.TerminalsRequest;
-import com.kodypay.grpc.pay.v1.TerminalsResponse;
+import com.kodypay.grpc.pay.v1.RefundRequest;
+import com.kodypay.grpc.pay.v1.RefundResponse;
+import com.kodypay.grpc.pay.v1.KodyPayTerminalServiceGrpc.KodyPayTerminalServiceStub;
 import com.kodypay.grpc.sdk.common.PageCursor;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -72,11 +66,7 @@ public class PaymentClient {
         return metadata;
     }
 
-    public CompletableFuture<PayResponse> sendPayment(String terminalId, BigDecimal amount, java.util.function.Consumer<String> onPending) {
-        return sendPayment(terminalId, amount, false, onPending);
-    }
-
-    public CompletableFuture<PayResponse> sendPayment(String terminalId, BigDecimal amount, boolean showTips, java.util.function.Consumer<String> onPending) {
+    public CompletableFuture<PayResponse> sendPayment(String terminalId, BigDecimal amount, boolean showTips, PaymentMethodType paymentMethodType, java.util.function.Consumer<String> onPending) {
         LOG.debug("sendPayment: storeId={}, amount={}, terminalId={} (address: {})", payStoreId, amount, terminalId, inetSocketAddress);
 
         CompletableFuture<PayResponse> future = new CompletableFuture<>();
@@ -85,6 +75,7 @@ public class PaymentClient {
                 .setAmount(amount.toPlainString())
                 .setTerminalId(terminalId)
                 .setShowTips(showTips)
+                .setPaymentMethod(PaymentMethod.newBuilder().setPaymentMethodType(paymentMethodType).build())
                 .build(), new StreamObserver<>() {
             PayResponse response;
 
@@ -154,6 +145,42 @@ public class PaymentClient {
         return future;
     }
 
+    public CompletableFuture<com.kodypay.grpc.ecom.v1.RefundResponse> requestOnlineRefund(String paymentId, long amount) {
+        LOG.debug("requestOnlineRefund: storeId={}, paymentId={}, amount={} (address: {})", payStoreId, paymentId, amount, inetSocketAddress);
+
+        CompletableFuture<com.kodypay.grpc.ecom.v1.RefundResponse> future = new CompletableFuture<>();
+        ecomServiceStub.refund(com.kodypay.grpc.ecom.v1.RefundRequest.newBuilder()
+                .setStoreId(payStoreId.toString())
+                .setPaymentId(paymentId)
+                .setAmount(String.valueOf(amount))
+                .build(), new StreamObserver<>() {
+            com.kodypay.grpc.ecom.v1.RefundResponse response;
+
+            @Override
+            public void onNext(com.kodypay.grpc.ecom.v1.RefundResponse res) {
+                response = res;
+                com.kodypay.grpc.ecom.v1.RefundResponse.RefundStatus refundStatus = response.getStatus();
+                LOG.debug("requestRefund: response={}", response);
+                if (refundStatus == com.kodypay.grpc.ecom.v1.RefundResponse.RefundStatus.FAILED) {
+                    LOG.error("requestRefund: Failed to request refund, status={}, message={}", refundStatus, response);
+                }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                LOG.error("requestOnlineRefund: error requesting online refund, message={}, stack={}", e.getMessage(), e);
+                future.completeExceptionally(e);
+            }
+
+            @Override
+            public void onCompleted() {
+                LOG.debug("requestOnlineRefund: complete");
+                future.complete(response);
+            }
+        });
+        return future;
+    }
+
     public CompletableFuture<PaymentStatus> cancelPayment(BigDecimal amount, String terminalId, String orderId) {
         LOG.debug("cancelPayment: storeId={}, amount={}, terminalId={}, orderId={}", payStoreId, amount, terminalId, orderId);
 
@@ -186,6 +213,42 @@ public class PaymentClient {
             public void onCompleted() {
                 LOG.debug("cancelPayment: complete");
                 future.complete(response.getStatus());
+            }
+        });
+        return future;
+    }
+
+    public CompletableFuture<RefundResponse> requestRefund(BigDecimal amount, String orderId) {
+        LOG.debug("requestRefund: storeId={}, amount={}, orderId={}", payStoreId, amount, orderId);
+
+        CompletableFuture<RefundResponse> future = new CompletableFuture<>();
+        terminalServiceStub.refund(RefundRequest.newBuilder()
+                .setStoreId(payStoreId.toString())
+                .setAmount(amount.toPlainString())
+                .setOrderId(orderId)
+                .build(), new StreamObserver<>() {
+            RefundResponse response;
+
+            @Override
+            public void onNext(RefundResponse res) {
+                response = res;
+                RefundResponse.RefundStatus refundStatus = response.getStatus();
+                LOG.debug("requestRefund: response={}", response);
+                if (refundStatus == RefundResponse.RefundStatus.FAILED) {
+                    LOG.error("requestRefund: Failed to request refund, status={}, message={}", refundStatus, response);
+                }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                LOG.error("requestRefund: Failed to request refund, message={}, stack={}", e.getMessage(), e);
+                future.completeExceptionally(e);
+            }
+
+            @Override
+            public void onCompleted() {
+                LOG.debug("requestRefund: complete");
+                future.complete(response);
             }
         });
         return future;

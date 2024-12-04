@@ -3,12 +3,11 @@ package terminal;
 import cli.Command;
 import cli.PaymentCommand;
 import cli.PaymentInput;
-import com.kodypay.grpc.pay.v1.PayResponse;
-import com.kodypay.grpc.pay.v1.PaymentStatus;
-import com.kodypay.grpc.pay.v1.Terminal;
+import com.kodypay.grpc.pay.v1.*;
 import common.PaymentClient;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.impl.completer.EnumCompleter;
 import org.jline.reader.impl.completer.StringsCompleter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,24 +43,24 @@ public class TerminalJavaClient {
         client = new PaymentClient(address, storeId, apiKey);
     }
 
-    public PayResponse sendPayment(String amountStr, boolean showTips) throws ExecutionException, InterruptedException, TimeoutException {
+    public PayResponse sendPayment(String amountStr, boolean showTips, PaymentMethodType paymentMethodType) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Sending payment for amount: {} to terminal: {}", amountStr, exTerminalId);
         BigDecimal amount = new BigDecimal(amountStr);
-        CompletableFuture<PayResponse> response = client.sendPayment(exTerminalId, amount, showTips, orderId -> {
+        CompletableFuture<PayResponse> response = client.sendPayment(exTerminalId, amount, showTips, paymentMethodType, orderId -> {
             LOG.info("onPending: orderId={}", orderId);
             // optionally cancel payment after delay
             Executor delayed = CompletableFuture.delayedExecutor(30L, TimeUnit.SECONDS);
 
             CompletableFuture.supplyAsync(() -> {
                 LOG.info("Cancelling payment: {} = {}", amount, orderId);
-                return cancelPaymentAsync(amountStr, orderId);
+                return cancelPayment(amountStr, orderId);
             }, delayed);
         });
         response.thenAccept(res -> LOG.info("Sent Payment: {}, {}", amount, dump(res)));
         return response.get(timeout, TimeUnit.MINUTES);
     }
 
-    public CompletableFuture<PaymentStatus> cancelPaymentAsync(String amountStr, String orderId) {
+    public CompletableFuture<PaymentStatus> cancelPayment(String amountStr, String orderId) {
         LOG.info("Cancel payment: {} with amount: {}", orderId, amountStr);
         BigDecimal amount = new BigDecimal(amountStr);
 
@@ -70,6 +69,21 @@ public class TerminalJavaClient {
         response.thenAccept(res -> LOG.info("Cancelled Payment: {} = {}", orderId, res));
 
         return response;
+    }
+
+    public RefundResponse requestRefund(String amountStr, String orderId) throws ExecutionException, InterruptedException, TimeoutException {
+        Executor delayed = CompletableFuture.delayedExecutor(5L, TimeUnit.SECONDS);
+
+        CompletableFuture<RefundResponse> refundResponseFuture = CompletableFuture.supplyAsync(() -> {
+            LOG.info("Requesting refund for amount: {} for orderId: {}", amountStr, orderId);
+
+            BigDecimal amount = new BigDecimal(amountStr);
+            return client.requestRefund(amount, orderId).toCompletableFuture().join();
+        }, delayed);
+
+        refundResponseFuture.thenAccept(res -> LOG.info("Refunded payment: {} = {}", orderId, dump(res)));
+
+        return refundResponseFuture.get(timeout, TimeUnit.MINUTES);
     }
 
     public PayResponse getDetails(String orderId) throws ExecutionException, InterruptedException, TimeoutException {
@@ -103,18 +117,22 @@ public class TerminalJavaClient {
         String amountStr = "3.14";
 
         //Set to true to show tips on the terminal
-        boolean isShowTips = false;
+        boolean isShowTips = true;
+        PaymentMethodType paymentMethodType = PaymentMethodType.CARD; // ALIPAY, WECHAT
 
         listTerminals();
 
-        var orderId = terminalClient.sendPayment(amountStr, isShowTips).getOrderId();
+        var orderId = terminalClient.sendPayment(amountStr, isShowTips, paymentMethodType).getOrderId();
         LOG.info("Completed order: {}", orderId);
 
         var status = terminalClient.getDetails(orderId).getStatus();
         LOG.info("Payment status: {}", status);
 
+        var refundStatus = terminalClient.requestRefund(amountStr, orderId).getStatus();
+        LOG.info("Refund status: {}", refundStatus);
+
         if (status == PaymentStatus.PENDING) {
-            terminalClient.cancelPaymentAsync(amountStr, orderId).thenAccept(cancel -> {
+            terminalClient.cancelPayment(amountStr, orderId).thenAccept(cancel -> {
                 LOG.info("Order is cancelled? {}", cancel == PaymentStatus.CANCELLED);
             });
         }
@@ -140,6 +158,14 @@ public class TerminalJavaClient {
         }).collect(Collectors.joining(", "));
     }
 
+    private static String dump(RefundResponse msg) {
+        return msg.getAllFields().entrySet().stream().map(it -> {
+            var key = it.getKey().getName();
+            var value = it.getValue().toString().replace('\n', ' ');
+            return key + "=" + value;
+        }).collect(Collectors.joining(", "));
+    }
+
     public static class SendPaymentCommand implements PaymentCommand {
         private static final PaymentInput input = new PaymentInput();
 
@@ -151,11 +177,14 @@ public class TerminalJavaClient {
             listTerminals();
             String orderId;
             try {
-                orderId = terminalClient.sendPayment(String.format("%.2f", (float) input.getAmount() / 100), input.isShowTips()).getOrderId();
+                orderId = terminalClient.sendPayment(String.format("%.2f", (float) input.getAmount() / 100), input.isShowTips(), input.getPaymentMethodType()).getOrderId();
                 LOG.info("Completed order: {}", orderId);
 
                 var status = terminalClient.getDetails(orderId).getStatus();
                 LOG.info("Payment status: {}", status);
+
+                var refundStatus = terminalClient.requestRefund(String.format("%.2f", (float) input.getAmount() / 100), orderId).getStatus();
+                LOG.info("Refund status: {}", refundStatus);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -168,6 +197,10 @@ public class TerminalJavaClient {
 
             LineReader booleanReader = LineReaderBuilder.builder().completer(new StringsCompleter("true", "false")).build();
             input.setShowTips(Boolean.parseBoolean(booleanReader.readLine("\n Do you want to enable Terminal to show Tips (true/false): ")));
+
+            LineReader paymentMethodTypeReader = LineReaderBuilder.builder()
+                    .completer(new EnumCompleter(PaymentMethodType.class)).build();
+            input.setPaymentMethodType(PaymentMethodType.valueOf(paymentMethodTypeReader.readLine("\nChoose payment methode type (CARD, ALIPAY, WECHAT): ")));
         }
     }
 
