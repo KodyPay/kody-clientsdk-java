@@ -270,6 +270,7 @@ PayResponse response = paymentClient.getDetails(paymentDetailsRequest);
 ````
 
 ### Cancel Terminal Payment
+Cancel an ongoing terminal payment, before it has been paid on the terminal.
 
 #### CancelRequest - Cancel Payment Request
 ````java
