@@ -473,7 +473,7 @@ import com.kodypay.grpc.pay.v1.*;
 PaymentClient paymentClient = new PaymentClient(HOSTNAME, APIKEY);
 
 String storeId = "UUID of assigned store";
-String orderId = "a unique reference for the payment";
+String orderId = "a unique reference for the order";
 String paymentReference = "a unique reference for the payment";
 String amount = "1.00";
 String currency = "GBP";
