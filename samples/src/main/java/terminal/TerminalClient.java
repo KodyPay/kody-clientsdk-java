@@ -100,7 +100,6 @@ public class TerminalClient {
     }
 
     public RefundResponse requestRefund(String amountStr, String orderId) throws InterruptedException {
-        Thread.sleep(5000);
         LOG.info("Requesting refund for amount: {} for orderId: {}", amountStr, orderId);
 
         BigDecimal amount = new BigDecimal(amountStr);
@@ -147,6 +146,7 @@ public class TerminalClient {
         var status = terminalClient.getDetails(orderId).getStatus();
         LOG.info("Payment status: {}", status);
 
+        Thread.sleep(5000);
         var refundStatus = terminalClient.requestRefund(amountStr, orderId).getStatus();
         LOG.info("Refund status: {}", refundStatus);
 
@@ -201,6 +201,7 @@ public class TerminalClient {
                 var status = terminalClient.getDetails(orderId).getStatus();
                 LOG.info("Payment status: {}", status);
 
+                Thread.sleep(5000);
                 var refundStatus = terminalClient.requestRefund(String.format("%.2f", (float) input.getAmount() / 100), orderId).getStatus();
                 LOG.info("Refund status: {}", refundStatus);
             } catch (Exception e) {
