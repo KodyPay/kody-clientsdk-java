@@ -194,10 +194,10 @@ Request parameters:
 
 ````java
 public enum PaymentStatus {
-    PENDING("PENDING"),
-    SUCCESS("SUCCESS"),
-    FAILED("FAILED"),
-    CANCELLED("CANCELLED")
+    PENDING(0),
+    SUCCESS(1),
+    FAILED(2),
+    CANCELLED(3)
 }
 
 public class PayResponse {
@@ -295,10 +295,10 @@ The cancel payment request requires the following parameters:
 #### CancelResponse : Cancel Payment Response
 ````java
 public enum PaymentStatus {
-    PENDING("PENDING"),
-    SUCCESS("SUCCESS"),
-    FAILED("FAILED"),
-    CANCELLED("CANCELLED")
+    PENDING(0),
+    SUCCESS(1),
+    FAILED(2),
+    CANCELLED(3)
 }
 
 public class CancelResponse {
@@ -348,9 +348,9 @@ The refund payment request requires the following parameters:
 #### RefundResponse : Refund Payment Response
 ````java
 public enum RefundStatus {
-    PENDING("PENDING"),
-    REQUESTED("REQUESTED"),
-    FAILED("FAILED")
+    PENDING(0),
+    REQUESTED(1),
+    FAILED(2)
 }
 
 public class RefundResponse {
@@ -570,9 +570,9 @@ The refund payment request requires the following parameters:
 #### RefundResponse : Refund Payment Response
 ````java
 public enum RefundStatus {
-    PENDING("PENDING"),
-    REQUESTED("REQUESTED"),
-    FAILED("FAILED")
+    PENDING(0),
+    REQUESTED(1),
+    FAILED(2)
 }
 
 public class RefundResponse {
