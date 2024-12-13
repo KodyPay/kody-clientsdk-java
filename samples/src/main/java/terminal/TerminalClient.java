@@ -17,100 +17,118 @@ import java.net.URI;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import static common.Utils.loadProperties;
 
-public class TerminalJavaClient {
-    private static final Logger LOG = LoggerFactory.getLogger(TerminalJavaClient.class.getName());
-    private static final TerminalJavaClient terminalClient = new TerminalJavaClient();
+public class TerminalClient {
+    private static final Logger LOG = LoggerFactory.getLogger(TerminalClient.class.getName());
+    private static final TerminalClient terminalClient = new TerminalClient();
 
 
-    private final PaymentClient client;
+    private final PaymentClient paymentClient;
+    private final UUID storeId;
     private String exTerminalId;
-    private final long timeout = 1;
 
-    public TerminalJavaClient() {
+    public TerminalClient() {
         Properties properties = loadProperties();
         var address = URI.create(properties.getProperty("address", "http://localhost"));
         var apiKey = properties.getProperty("apiKey");
         if (apiKey == null)
             throw new IllegalArgumentException("Invalid config, expected apiKey");
 
-        var storeId = UUID.fromString(properties.getProperty("storeId"));
+        storeId = UUID.fromString(properties.getProperty("storeId"));
 
-        client = new PaymentClient(address, storeId, apiKey);
+        paymentClient = new PaymentClient(address, apiKey);
     }
 
-    public PayResponse sendPayment(String amountStr, boolean showTips, PaymentMethodType paymentMethodType) throws ExecutionException, InterruptedException, TimeoutException {
-        LOG.info("Sending payment for amount: {} to terminal: {}", amountStr, exTerminalId);
-        BigDecimal amount = new BigDecimal(amountStr);
-        CompletableFuture<PayResponse> response = client.sendPayment(exTerminalId, amount, showTips, paymentMethodType, orderId -> {
-            LOG.info("onPending: orderId={}", orderId);
-            // optionally cancel payment after delay
-            Executor delayed = CompletableFuture.delayedExecutor(30L, TimeUnit.SECONDS);
+    public List<Terminal> getTerminals() {
+        LOG.info("Get terminals");
 
-            CompletableFuture.supplyAsync(() -> {
-                LOG.info("Cancelling payment: {} = {}", amount, orderId);
-                return cancelPayment(amountStr, orderId);
-            }, delayed);
-        });
-        response.thenAccept(res -> LOG.info("Sent Payment: {}, {}", amount, dump(res)));
-        return response.get(timeout, TimeUnit.MINUTES);
-    }
+        TerminalsRequest terminalsRequest = TerminalsRequest.newBuilder()
+                .setStoreId(storeId.toString())
+                .build();
 
-    public CompletableFuture<PaymentStatus> cancelPayment(String amountStr, String orderId) {
-        LOG.info("Cancel payment: {} with amount: {}", orderId, amountStr);
-        BigDecimal amount = new BigDecimal(amountStr);
+        List<Terminal> response = paymentClient.getTerminals(terminalsRequest);
+        var defaultTerminalId = loadProperties().getProperty("terminalId");
 
-        CompletableFuture<PaymentStatus> response = client.cancelPayment(amount, exTerminalId, orderId);
-
-        response.thenAccept(res -> LOG.info("Cancelled Payment: {} = {}", orderId, res));
+        this.exTerminalId = response.stream()
+                .filter(Terminal::getOnline)
+                .filter(t -> defaultTerminalId == null || t.getTerminalId().equals(defaultTerminalId))
+                .findFirst()
+                .orElse(response.get(0))
+                .getTerminalId();
+        LOG.info("Selected terminal: {}", exTerminalId);
 
         return response;
     }
 
-    public RefundResponse requestRefund(String amountStr, String orderId) throws ExecutionException, InterruptedException, TimeoutException {
-        Executor delayed = CompletableFuture.delayedExecutor(5L, TimeUnit.SECONDS);
+    public PayResponse sendPayment(String amountStr, boolean showTips, PaymentMethodType paymentMethodType) {
+        LOG.info("Sending payment for amount: {} to terminal: {}", amountStr, exTerminalId);
+        BigDecimal amount = new BigDecimal(amountStr);
 
-        CompletableFuture<RefundResponse> refundResponseFuture = CompletableFuture.supplyAsync(() -> {
-            LOG.info("Requesting refund for amount: {} for orderId: {}", amountStr, orderId);
+        PayRequest payRequest = PayRequest.newBuilder()
+                .setStoreId(storeId.toString())
+                .setAmount(amount.toPlainString())
+                .setTerminalId(exTerminalId)
+                .setShowTips(showTips)
+                .setPaymentMethod(PaymentMethod.newBuilder().setPaymentMethodType(paymentMethodType).build())
+                .build();
 
-            BigDecimal amount = new BigDecimal(amountStr);
-            return client.requestRefund(amount, orderId).toCompletableFuture().join();
-        }, delayed);
+        PayResponse response = paymentClient.sendTerminalPayment(payRequest);
 
-        refundResponseFuture.thenAccept(res -> LOG.info("Refunded payment: {} = {}", orderId, dump(res)));
-
-        return refundResponseFuture.get(timeout, TimeUnit.MINUTES);
+        LOG.info("Sent Payment: {}, {}", amount, dump(response));
+        return response;
     }
 
-    public PayResponse getDetails(String orderId) throws ExecutionException, InterruptedException, TimeoutException {
+    public PaymentStatus cancelPayment(String amountStr, String orderId) {
+        LOG.info("Cancel payment: {} with amount: {}", orderId, amountStr);
+        BigDecimal amount = new BigDecimal(amountStr);
+
+        CancelRequest cancelRequest = CancelRequest.newBuilder()
+                .setStoreId(storeId.toString())
+                .setAmount(amount.toPlainString())
+                .setTerminalId(exTerminalId)
+                .setOrderId(orderId)
+                .build();
+
+        PaymentStatus response = paymentClient.cancelPayment(cancelRequest);
+
+        LOG.info("Cancelled Payment: {} = {}", orderId, response);
+
+        return response;
+    }
+
+    public RefundResponse requestRefund(String amountStr, String orderId) throws InterruptedException {
+        LOG.info("Requesting refund for amount: {} for orderId: {}", amountStr, orderId);
+
+        BigDecimal amount = new BigDecimal(amountStr);
+        RefundRequest refundRequest = RefundRequest.newBuilder()
+                .setStoreId(storeId.toString())
+                .setAmount(amount.toPlainString())
+                .setOrderId(orderId)
+                .build();
+
+        RefundResponse response = paymentClient.requestTerminalRefund(refundRequest);
+
+        LOG.info("Refunded payment: {} = {}", orderId, dump(response));
+
+        return response;
+    }
+
+    public PayResponse getDetails(String orderId) {
         LOG.info("Get payment details for: {}", orderId);
 
-        CompletableFuture<PayResponse> details = client.getDetails(orderId);
+        PaymentDetailsRequest paymentDetailsRequest = PaymentDetailsRequest.newBuilder()
+                .setStoreId(storeId.toString())
+                .setOrderId(orderId)
+                .build();
 
-        details.thenAccept(res -> LOG.info("Payment Details: {} = {}", orderId, dump(res)));
+        PayResponse response = paymentClient.getDetails(paymentDetailsRequest);
 
-        return details.get(timeout, TimeUnit.MINUTES);
-    }
+        LOG.info("Payment Details: {} = {}", orderId, dump(response));
 
-    public List<Terminal> getTerminals() throws ExecutionException, InterruptedException, TimeoutException {
-        LOG.info("Get terminals");
-        CompletableFuture<List<Terminal>> response = client.getTerminals();
-        var defaultTerminalId = loadProperties().getProperty("terminalId");
-        response.thenAccept(it -> {
-            this.exTerminalId = it.stream()
-                    .filter(Terminal::getOnline)
-                    .filter(t -> defaultTerminalId == null || t.getTerminalId().equals(defaultTerminalId))
-                    .findFirst()
-                    .orElse(it.get(0))
-                    .getTerminalId();
-            LOG.info("Selected terminal: {}", exTerminalId);
-        });
-
-        return response.get(timeout, TimeUnit.MINUTES);
+        return response;
     }
 
     public static void main(String[] args) throws Exception {
@@ -128,13 +146,13 @@ public class TerminalJavaClient {
         var status = terminalClient.getDetails(orderId).getStatus();
         LOG.info("Payment status: {}", status);
 
+        Thread.sleep(5000);
         var refundStatus = terminalClient.requestRefund(amountStr, orderId).getStatus();
         LOG.info("Refund status: {}", refundStatus);
 
         if (status == PaymentStatus.PENDING) {
-            terminalClient.cancelPayment(amountStr, orderId).thenAccept(cancel -> {
-                LOG.info("Order is cancelled? {}", cancel == PaymentStatus.CANCELLED);
-            });
+            PaymentStatus response = terminalClient.cancelPayment(amountStr, orderId);
+            LOG.info("Order is cancelled? {}", response == PaymentStatus.CANCELLED);
         }
     }
 
@@ -183,6 +201,7 @@ public class TerminalJavaClient {
                 var status = terminalClient.getDetails(orderId).getStatus();
                 LOG.info("Payment status: {}", status);
 
+                Thread.sleep(5000);
                 var refundStatus = terminalClient.requestRefund(String.format("%.2f", (float) input.getAmount() / 100), orderId).getStatus();
                 LOG.info("Refund status: {}", refundStatus);
             } catch (Exception e) {

@@ -1,11 +1,11 @@
 package cli;
 
-import ecom.EcomAsyncJavaClient;
+import ecom.EcomClient;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.completer.StringsCompleter;
-import terminal.TerminalJavaClient;
+import terminal.TerminalClient;
 
 public class KodyDemo {
     public static void main(String[] args) {
@@ -28,21 +28,21 @@ public class KodyDemo {
 
                 switch (line.toLowerCase()) {
                     case "1":
-                        new EcomAsyncJavaClient.SendPaymentCommand().gatherInput();
-                        new EcomAsyncJavaClient.SendPaymentCommand().execute();
+                        new EcomClient.SendPaymentCommand().gatherInput();
+                        new EcomClient.SendPaymentCommand().execute();
                         break;
                     case "2":
-                        new EcomAsyncJavaClient.GetPaymentsCommand().execute();
+                        new EcomClient.GetPaymentsCommand().execute();
                         break;
                     case "3":
-                        new TerminalJavaClient.GetTerminalsCommand().execute();
+                        new TerminalClient.GetTerminalsCommand().execute();
                         break;
                     case "4":
-                        new TerminalJavaClient.SendPaymentCommand().gatherInput();
-                        new TerminalJavaClient.SendPaymentCommand().execute();
+                        new TerminalClient.SendPaymentCommand().gatherInput();
+                        new TerminalClient.SendPaymentCommand().execute();
                         break;
                     case "5":
-                        new TerminalJavaClient.GetPaymentDetailsCommand().execute();
+                        new TerminalClient.GetPaymentDetailsCommand().execute();
                         break;
                     case "99":
                     case "exit":
