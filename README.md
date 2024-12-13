@@ -500,9 +500,9 @@ PaymentInitiationResponse response = paymentClient.sendOnlinePayment(paymentInit
 
 The payment details request requires the following parameters:
 - `storeId` - the ID of your assigned store
-- `pageCursor` - set pagination settings
-  - `page` - set an offset of the results. Default value is 0
-  - `pageSize` - the number of results to be returned per page. Default value is 0
+- `pageCursor` - set pagination settings.
+  - `page` - set an offset of the results. Value of 0 will return payments from the beginning of the data set.
+  - `pageSize` - the number of results to be returned per page. Value of 1 will return one record.
 
 #### GetPaymentsRequest: Get Payments Request
 ````java
