@@ -12,18 +12,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
-import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 
-public class ExampleEcomGetTerminals {
-    private static final Logger LOG = LoggerFactory.getLogger(ExampleEcomGetTerminals.class);
+public class ExampleGetTerminals {
+    private static final Logger LOG = LoggerFactory.getLogger(ExampleGetTerminals.class);
     private static final long TIMEOUT_MS = java.time.Duration.ofMinutes(3).toMillis();
 
     public static void main(String[] args) {
 
-        // Load configuration properties
         Properties properties = loadProperties();
         var address = properties.getProperty("address", "grpc-staging.kodypay.com");
         var apiKey = properties.getProperty("apiKey");
@@ -32,7 +30,6 @@ public class ExampleEcomGetTerminals {
         }
         var storeId = properties.getProperty("storeId");
 
-        // Initialize PaymentClient
         Metadata metadata = new Metadata();
         metadata.put(Metadata.Key.of("X-API-Key", Metadata.ASCII_STRING_MARSHALLER), apiKey);
 
@@ -45,11 +42,10 @@ public class ExampleEcomGetTerminals {
 
         KodyPayTerminalServiceGrpc.KodyPayTerminalServiceStub paymentClient = KodyPayTerminalServiceGrpc.newStub(channel);
 
-        // Define terminal request
         TerminalsRequest terminalsRequest = TerminalsRequest.newBuilder()
                 .setStoreId(storeId)
                 .build();
-        LOG.info("Get Terminals");
+        LOG.info("getTerminals");
 
         CountDownLatch latch = new CountDownLatch(1);
 
@@ -86,7 +82,7 @@ public class ExampleEcomGetTerminals {
 
     private static Properties loadProperties() {
         Properties properties = new Properties();
-        try (var inputStream = ExampleEcomGetTerminals.class.getClassLoader().getResourceAsStream("config.properties")) {
+        try (var inputStream = ExampleGetTerminals.class.getClassLoader().getResourceAsStream("config.properties")) {
             if (inputStream == null) {
                 throw new IllegalArgumentException("Config file 'config.properties' not found in resources folder");
             }
@@ -95,10 +91,6 @@ public class ExampleEcomGetTerminals {
             throw new RuntimeException("Failed to load configuration", e);
         }
         return properties;
-    }
-
-    private static String generatePaymentReference() {
-        return "pay_" + UUID.randomUUID();
     }
 
 }

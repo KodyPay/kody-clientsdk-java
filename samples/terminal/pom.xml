@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.kody</groupId>
-    <artifactId>kody-java-examples</artifactId>
+    <artifactId>terminal</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -18,7 +18,7 @@
         <dependency>
             <groupId>com.kodypay.grpc</groupId>
             <artifactId>kody-clientsdk-java</artifactId>
-            <version>0.0.3</version>
+            <version>0.0.5</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
