@@ -11,6 +11,7 @@ import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +41,7 @@ public class ExampleRequestRefund {
                 .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
                 .build();
 
-        KodyPayTerminalServiceGrpc.KodyPayTerminalServiceStub paymentClient = KodyPayTerminalServiceGrpc.newStub(channel);
+        KodyPayTerminalServiceGrpc.KodyPayTerminalServiceBlockingStub paymentClient = KodyPayTerminalServiceGrpc.newBlockingStub(channel);
 
         // Define terminal request
         RefundRequest refundRequest = RefundRequest.newBuilder()
@@ -50,41 +51,9 @@ public class ExampleRequestRefund {
                 .build();
         LOG.info("requestRefund in Terminal");
 
-        CountDownLatch latch = new CountDownLatch(1);
+        RefundResponse refundRepsonse = paymentClient.refund(refundRequest).next();
+        LOG.info("refundRepsonse: {}", refundRepsonse);
 
-        paymentClient.refund(refundRequest, new StreamObserver<>() {
-            RefundResponse response;
-
-            @Override
-            public void onNext(RefundResponse res) {
-                response = res;
-                RefundResponse.RefundStatus refundStatus = response.getStatus();
-                LOG.debug("requestRefund: response={}", response);
-                if (refundStatus == RefundResponse.RefundStatus.FAILED) {
-                    LOG.error("requestRefund: Failed to request refund, status={}, message={}", refundStatus, response);
-                }
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                LOG.error("requestRefund in Terminal: Failed to requestRefund, message={}, stack={}", e.getMessage(), e);
-                latch.countDown();
-            }
-
-            @Override
-            public void onCompleted() {
-                LOG.debug("requestRefund in Terminal: complete");
-                latch.countDown();
-            }
-        });
-
-        try {
-            latch.await(); // Wait for the response
-        } catch (InterruptedException e) {
-            LOG.error("Main thread interrupted while waiting for response", e);
-        } finally {
-            channel.shutdown(); // Ensure the channel is shut down
-        }
     }
 
     private static Properties loadProperties() {

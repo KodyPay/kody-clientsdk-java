@@ -40,7 +40,7 @@ public class ExampleCancelPayment {
                 .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
                 .build();
 
-        KodyPayTerminalServiceGrpc.KodyPayTerminalServiceStub paymentClient = KodyPayTerminalServiceGrpc.newStub(channel);
+        KodyPayTerminalServiceGrpc.KodyPayTerminalServiceBlockingStub paymentClient = KodyPayTerminalServiceGrpc.newBlockingStub(channel);
 
         // Define terminal request
         CancelRequest cancelRequest = CancelRequest.newBuilder()
@@ -51,37 +51,8 @@ public class ExampleCancelPayment {
                 .build();
         LOG.info("Cancel Payment in Terminal");
 
-        CountDownLatch latch = new CountDownLatch(1);
-
-        paymentClient.cancel(cancelRequest, new StreamObserver<>() {
-            CancelResponse response;
-
-            @Override
-            public void onNext(CancelResponse res) {
-                response = res;
-                LOG.debug("Cancel Payment in Terminal: response={}", response);
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                LOG.error("Cancel Payment in Terminal: Failed to get terminals, message={}, stack={}", e.getMessage(), e);
-                latch.countDown();
-            }
-
-            @Override
-            public void onCompleted() {
-                LOG.debug("Cancel Payment in Terminal: complete");
-                latch.countDown();
-            }
-        });
-
-        try {
-            latch.await(); // Wait for the response
-        } catch (InterruptedException e) {
-            LOG.error("Main thread interrupted while waiting for response", e);
-        } finally {
-            channel.shutdown(); // Ensure the channel is shut down
-        }
+        CancelResponse cancelResponse = paymentClient.cancel(cancelRequest);
+        LOG.info("cancelResponse: {}", cancelResponse);
     }
 
     private static Properties loadProperties() {

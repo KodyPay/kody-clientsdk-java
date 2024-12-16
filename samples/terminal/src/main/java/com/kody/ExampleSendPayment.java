@@ -9,6 +9,7 @@ import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -39,7 +40,7 @@ public class ExampleSendPayment {
                 .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
                 .build();
 
-        KodyPayTerminalServiceGrpc.KodyPayTerminalServiceStub paymentClient = KodyPayTerminalServiceGrpc.newStub(channel);
+        KodyPayTerminalServiceGrpc.KodyPayTerminalServiceBlockingStub paymentClient = KodyPayTerminalServiceGrpc.newBlockingStub(channel);
 
         // Define terminal request
         PayRequest payRequest = PayRequest.newBuilder()
@@ -50,37 +51,8 @@ public class ExampleSendPayment {
                 .build();
         LOG.info("Sent Payment to Terminal");
 
-        CountDownLatch latch = new CountDownLatch(1);
-
-        paymentClient.pay(payRequest, new StreamObserver<>() {
-            PayResponse response;
-
-            @Override
-            public void onNext(PayResponse res) {
-                response = res;
-                LOG.debug("Sent Payment to Terminal: response={}", response);
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                LOG.error("Sent Payment to Terminal: Failed to get terminals, message={}, stack={}", e.getMessage(), e);
-                latch.countDown();
-            }
-
-            @Override
-            public void onCompleted() {
-                LOG.debug("Sent Payment to Terminal: complete");
-                latch.countDown();
-            }
-        });
-
-        try {
-            latch.await(); // Wait for the response
-        } catch (InterruptedException e) {
-            LOG.error("Main thread interrupted while waiting for response", e);
-        } finally {
-            channel.shutdown(); // Ensure the channel is shut down
-        }
+        PayResponse payResponse = paymentClient.pay(payRequest).next();
+        LOG.info("payResponse: {}", payResponse);
     }
 
     private static Properties loadProperties() {

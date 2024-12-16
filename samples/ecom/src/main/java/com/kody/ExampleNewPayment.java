@@ -43,7 +43,7 @@ public class ExampleNewPayment {
                 .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
                 .build();
 
-        KodyEcomPaymentsServiceGrpc.KodyEcomPaymentsServiceStub paymentClient = KodyEcomPaymentsServiceGrpc.newStub(channel);
+        KodyEcomPaymentsServiceGrpc.KodyEcomPaymentsServiceBlockingStub paymentClient = KodyEcomPaymentsServiceGrpc.newBlockingStub(channel);
 
         PaymentInitiationRequest paymentInitiationRequest = PaymentInitiationRequest.newBuilder()
                 .setStoreId(storeId)
@@ -54,37 +54,8 @@ public class ExampleNewPayment {
                 .setReturnUrl("https://display-parameters.com/").build();
         LOG.info("Send online payment");
 
-        CountDownLatch latch = new CountDownLatch(1);
-
-        paymentClient.initiatePayment(paymentInitiationRequest, new StreamObserver<>() {
-            PaymentInitiationResponse response;
-
-            @Override
-            public void onNext(PaymentInitiationResponse res) {
-                response = res;
-                LOG.debug("sendOnlinePayment: response={}", response);
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                LOG.error("sendOnlinePayment: error sending online payment, message={}, stack={}", e.getMessage(), e);
-                latch.countDown();
-            }
-
-            @Override
-            public void onCompleted() {
-                LOG.debug("sendOnlinePayment: complete");
-                latch.countDown();
-            }
-        });
-
-        try {
-            latch.await(); // Wait for the response
-        } catch (InterruptedException e) {
-            LOG.error("Main thread interrupted while waiting for response", e);
-        } finally {
-            channel.shutdown(); // Ensure the channel is shut down
-        }
+        PaymentInitiationResponse paymentInitiationResponse = paymentClient.initiatePayment(paymentInitiationRequest);
+        LOG.info("paymentInitiationResponse: {}", paymentInitiationResponse);
     }
 
     private static Properties loadProperties() {

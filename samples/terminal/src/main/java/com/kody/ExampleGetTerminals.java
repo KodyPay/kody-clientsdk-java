@@ -40,44 +40,15 @@ public class ExampleGetTerminals {
                 .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
                 .build();
 
-        KodyPayTerminalServiceGrpc.KodyPayTerminalServiceStub paymentClient = KodyPayTerminalServiceGrpc.newStub(channel);
+        KodyPayTerminalServiceGrpc.KodyPayTerminalServiceBlockingStub paymentClient = KodyPayTerminalServiceGrpc.newBlockingStub(channel);
 
         TerminalsRequest terminalsRequest = TerminalsRequest.newBuilder()
                 .setStoreId(storeId)
                 .build();
         LOG.info("getTerminals");
 
-        CountDownLatch latch = new CountDownLatch(1);
-
-        paymentClient.terminals(terminalsRequest, new StreamObserver<>() {
-            TerminalsResponse response;
-
-            @Override
-            public void onNext(TerminalsResponse res) {
-                response = res;
-                LOG.debug("getTerminals: response={}", response);
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                LOG.error("getTerminals: Failed to get terminals, message={}, stack={}", e.getMessage(), e);
-                latch.countDown();
-            }
-
-            @Override
-            public void onCompleted() {
-                LOG.debug("getTerminals: complete");
-                latch.countDown();
-            }
-        });
-
-        try {
-            latch.await(); // Wait for the response
-        } catch (InterruptedException e) {
-            LOG.error("Main thread interrupted while waiting for response", e);
-        } finally {
-            channel.shutdown(); // Ensure the channel is shut down
-        }
+        TerminalsResponse terminalsResponse = paymentClient.terminals(terminalsRequest);
+        LOG.info("terminalsResponse: {}", terminalsResponse);
     }
 
     private static Properties loadProperties() {

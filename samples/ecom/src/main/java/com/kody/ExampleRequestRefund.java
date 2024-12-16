@@ -11,6 +11,7 @@ import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -30,6 +31,7 @@ public class ExampleRequestRefund {
             throw new IllegalArgumentException("Invalid config, expected apiKey");
         }
         var storeId = properties.getProperty("storeId");
+        var paymentId = properties.getProperty("paymentId");
 
         // Initialize PaymentClient
         Metadata metadata = new Metadata();
@@ -42,51 +44,18 @@ public class ExampleRequestRefund {
                 .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
                 .build();
 
-        KodyEcomPaymentsServiceGrpc.KodyEcomPaymentsServiceStub paymentClient = KodyEcomPaymentsServiceGrpc.newStub(channel);
+        KodyEcomPaymentsServiceGrpc.KodyEcomPaymentsServiceBlockingStub paymentClient = KodyEcomPaymentsServiceGrpc.newBlockingStub(channel);
 
         // Define refund request
         RefundRequest refundRequest = RefundRequest.newBuilder()
                 .setStoreId(storeId)
-                .setAmount("2.22")
-                .setPaymentId("paymentId")
+                .setAmount("1")
+                .setPaymentId(paymentId)
                 .build();
         LOG.info("sendrequestRefund");
 
-        CountDownLatch latch = new CountDownLatch(1);
-
-        paymentClient.refund(refundRequest, new StreamObserver<>() {
-            RefundResponse response;
-
-            @Override
-            public void onNext(RefundResponse res) {
-                response = res;
-                RefundResponse.RefundStatus refundStatus = response.getStatus();
-                LOG.debug("sendrequestRefund: response={}", response);
-                if (refundStatus == RefundResponse.RefundStatus.FAILED) {
-                    LOG.error("requestRefund: Failed to request refund, status={}, message={}", refundStatus, response);
-                }
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                LOG.error("sendRequestRefund: error sending request refund, message={}, stack={}", e.getMessage(), e);
-                latch.countDown();
-            }
-
-            @Override
-            public void onCompleted() {
-                LOG.debug("sendOnlinePayment: complete");
-                latch.countDown();
-            }
-        });
-
-        try {
-            latch.await(); // Wait for the response
-        } catch (InterruptedException e) {
-            LOG.error("Main thread interrupted while waiting for response", e);
-        } finally {
-            channel.shutdown(); // Ensure the channel is shut down
-        }
+        RefundResponse refundResponse = paymentClient.refund(refundRequest).next();
+        LOG.info("refundResponse: {}", refundResponse);
     }
 
     private static Properties loadProperties() {

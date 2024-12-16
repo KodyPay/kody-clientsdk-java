@@ -39,44 +39,15 @@ public class ExampleGetPayments {
                 .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
                 .build();
 
-        KodyEcomPaymentsServiceGrpc.KodyEcomPaymentsServiceStub paymentClient = KodyEcomPaymentsServiceGrpc.newStub(channel);
+        KodyEcomPaymentsServiceGrpc.KodyEcomPaymentsServiceBlockingStub paymentClient = KodyEcomPaymentsServiceGrpc.newBlockingStub(channel);
 
         GetPaymentsRequest getPaymentsRequest = GetPaymentsRequest.newBuilder()
                 .setStoreId(storeId)
                 .setPageCursor(PageCursor.newBuilder().setPageSize(1)).build();
         LOG.info("getPayment");
 
-        CountDownLatch latch = new CountDownLatch(1);
-
-        paymentClient.getPayments(getPaymentsRequest, new StreamObserver<>() {
-            GetPaymentsResponse response;
-
-            @Override
-            public void onNext(GetPaymentsResponse res) {
-                response = res;
-                LOG.debug("getPayment: response={}", response);
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                LOG.error("getPayment: error sending online payment, message={}, stack={}", e.getMessage(), e);
-                latch.countDown();
-            }
-
-            @Override
-            public void onCompleted() {
-                LOG.debug("getPayment: complete");
-                latch.countDown();
-            }
-        });
-
-        try {
-            latch.await(); // Wait for the response
-        } catch (InterruptedException e) {
-            LOG.error("Main thread interrupted while waiting for response", e);
-        } finally {
-            channel.shutdown(); // Ensure the channel is shut down
-        }
+        GetPaymentsResponse payments = paymentClient.getPayments(getPaymentsRequest);
+        LOG.info("GetPaymentsResponse: {}", payments);
     }
 
     private static Properties loadProperties() {
