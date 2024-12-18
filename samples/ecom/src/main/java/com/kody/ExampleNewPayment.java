@@ -3,74 +3,67 @@ package com.kody;
 import com.kodypay.grpc.ecom.v1.KodyEcomPaymentsServiceGrpc;
 import com.kodypay.grpc.ecom.v1.PaymentInitiationRequest;
 import com.kodypay.grpc.ecom.v1.PaymentInitiationResponse;
-import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 
 public class ExampleNewPayment {
-    private static final Logger LOG = LoggerFactory.getLogger(ExampleNewPayment.class);
-    private static final long TIMEOUT_MS = java.time.Duration.ofMinutes(3).toMillis();
+    //TODO: Replace this with the testing or live environment
+    public static final String HOSTNAME = "grpc-staging.kodypay.com";
+    public static final String API_KEY = "API KEY";
 
     public static void main(String[] args) {
+        //TODO: Replace this with your Store ID
+        String storeId = "STORE ID";
 
-        // Load configuration properties
-        Properties properties = loadProperties();
-        var address = properties.getProperty("address", "grpc-developement.kodypay.com");
-        var apiKey = properties.getProperty("apiKey");
-        if (apiKey == null) {
-            throw new IllegalArgumentException("Invalid config, expected apiKey");
-        }
-        var storeId = properties.getProperty("storeId");
+        //TODO: Replace with your internal order ID
+        String orderId = "order_" + UUID.randomUUID();
+        //TODO: Replace with your internal payment reference
+        String paymentReference = "pay_" + UUID.randomUUID();
 
-        // Initialize PaymentClient
-        Metadata metadata = new Metadata();
-        metadata.put(Metadata.Key.of("X-API-Key", Metadata.ASCII_STRING_MARSHALLER), apiKey);
+        //TODO: Replace this with your store operating currency: ISO 4217
+        String currencyCode = "HKD";
+        //TODO: Set the payment amount in minor units
+        long amountMinorUnits = 1000;
+        //TODO: Set the URL where the payment page will redirect to after the user completes the payment
+        String returnUrl = "https://display-parameters.com/";
 
-        ManagedChannel channel = ManagedChannelBuilder
-                .forAddress(address, 443)
-                .idleTimeout(TIMEOUT_MS, TimeUnit.MILLISECONDS)
-                .keepAliveTimeout(TIMEOUT_MS, TimeUnit.MILLISECONDS)
-                .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
-                .build();
+        initiateEcomPayment(storeId, paymentReference, orderId, currencyCode, amountMinorUnits, returnUrl);
+    }
 
-        KodyEcomPaymentsServiceGrpc.KodyEcomPaymentsServiceBlockingStub paymentClient = KodyEcomPaymentsServiceGrpc.newBlockingStub(channel);
+    public static void initiateEcomPayment(String storeId, String orderId, String paymentReference,
+                                           String currencyCode, long amountMinorUnits, String returnUrl) {
+        var paymentClient = createKodyEcomPaymentsClient();
 
         PaymentInitiationRequest paymentInitiationRequest = PaymentInitiationRequest.newBuilder()
                 .setStoreId(storeId)
-                .setPaymentReference(generatePaymentReference())
-                .setAmount(222)
-                .setCurrency("HKD")
-                .setOrderId("ORDERID")
-                .setReturnUrl("https://display-parameters.com/").build();
-        LOG.info("Send online payment");
+                .setPaymentReference(paymentReference)
+                .setAmount(amountMinorUnits)
+                .setCurrency(currencyCode)
+                .setOrderId(orderId)
+                .setReturnUrl(returnUrl)
+                .build();
+        System.out.println("Send online payment");
 
         PaymentInitiationResponse paymentInitiationResponse = paymentClient.initiatePayment(paymentInitiationRequest);
-        LOG.info("paymentInitiationResponse: {}", paymentInitiationResponse);
+        System.out.println("paymentInitiationResponse.paymentUrl: " + paymentInitiationResponse.getResponse().getPaymentUrl());
+        System.out.println("paymentInitiationResponse.paymentId: " + paymentInitiationResponse.getResponse().getPaymentId());
     }
 
-    private static Properties loadProperties() {
-        Properties properties = new Properties();
-        try (var inputStream = ExampleNewPayment.class.getClassLoader().getResourceAsStream("config.properties")) {
-            if (inputStream == null) {
-                throw new IllegalArgumentException("Config file 'config.properties' not found in resources folder");
-            }
-            properties.load(inputStream);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load configuration", e);
-        }
-        return properties;
+    private static KodyEcomPaymentsServiceGrpc.KodyEcomPaymentsServiceBlockingStub createKodyEcomPaymentsClient() {
+        Metadata metadata = new Metadata();
+        metadata.put(Metadata.Key.of("X-API-Key", Metadata.ASCII_STRING_MARSHALLER), API_KEY);
+        return KodyEcomPaymentsServiceGrpc.newBlockingStub(ManagedChannelBuilder
+                .forAddress(HOSTNAME, 443)
+                .idleTimeout(3, TimeUnit.MINUTES)
+                .keepAliveTimeout(3, TimeUnit.MINUTES)
+                .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                .build());
     }
-
-    private static String generatePaymentReference() {
-        return "pay_" + UUID.randomUUID();
-    }
-
 }
