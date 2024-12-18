@@ -396,8 +396,8 @@ Each of these channels have their own collection of services that are available 
 The Kody Payments API Ecom service has the following methods:
 
 - [Create Online Payment](#create-online-payment):`PaymentClient.sendOnlinePayment` - initiate an online payment
-- [Get Online Payment Details](#get-online-payment-details) `PaymentClient.paymentDetails` - get payment details
-- [Get Payments](#get-online-payments) `PaymentClient.getPayments` - get online payments
+- [Get Payment Details](#get-payment-details) `PaymentClient.paymentDetails` - get payment details
+- [Get Payments](#get-payments) `PaymentClient.getPayments` - get payments
 - [Refund online payment](#refund-online-payment): `PaymentClient.refundOnlinePayment` - refund an online payment
 
 Follow the links for these methods to see the sample code and the data specification.
@@ -497,7 +497,7 @@ PaymentInitiationRequest paymentInitiationRequest = PaymentInitiationRequest.new
 PaymentInitiationResponse response = paymentClient.sendOnlinePayment(paymentInitiationRequest);
 ````
 
-### Get Online Payment Details
+### Get Payment Details
 
 The payment details request requires the following parameters:
 - `storeId` - the ID of your assigned store
@@ -505,7 +505,7 @@ The payment details request requires the following parameters:
   - `paymentId` - The unique identifier created by Kody
   - `paymentReference` - Your unique payment reference that was set during the initiation
 
-#### GetPaymentsRequest: Get Payments Request
+#### PaymentDetailsRequest: Payment Details Request
 ````java
 public class PaymentDetailsRequest {
     private String storeId;
@@ -546,7 +546,7 @@ PaymentDetailsRequest paymentDetailsRequest = PaymentDetailsRequest.newBuilder()
 PaymentDetailsResponse payments = paymentClient.paymentDetails(paymentDetailsRequest);
 ````
 
-### Get Online Payment Details
+### Get Payments
 
 The payment details request requires the following parameters:
 - `storeId` - the ID of your assigned store
