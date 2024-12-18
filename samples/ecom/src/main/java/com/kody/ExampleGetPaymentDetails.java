@@ -20,7 +20,7 @@ public class ExampleGetPaymentDetails {
     public static void main(String[] args) {
 
         Properties properties = loadProperties();
-        var address = properties.getProperty("address", "grpc-developement.kodypay.com");
+        var address = properties.getProperty("address", "grpc-staging.kodypay.com");
         var apiKey = properties.getProperty("apiKey");
         if (apiKey == null) {
             throw new IllegalArgumentException("Invalid config, expected apiKey");
