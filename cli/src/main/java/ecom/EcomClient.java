@@ -31,12 +31,12 @@ public class EcomClient {
 
     public EcomClient() {
         Properties properties = loadProperties();
-        var address = URI.create(properties.getProperty("address", "https://grpc-development.kodypay.com"));
-        var apiKey = "FS0i6P4p6-PTlMCDwGbX11JXIz-wFy4JjspNc_DsR7mF";
+        var address = URI.create(properties.getProperty("address", "http://localhost"));
+        var apiKey = properties.getProperty("apiKey");
         if (apiKey == null)
             throw new IllegalArgumentException("Invalid config, expected apiKey");
 
-        storeId = UUID.fromString("8363bb20-b3b5-4323-b109-e230e55ed052");
+        storeId = UUID.fromString(properties.getProperty("storeId"));
         paymentClient = new PaymentClient(address, apiKey);
     }
 
