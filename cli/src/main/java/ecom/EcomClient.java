@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -70,13 +69,13 @@ public class EcomClient {
         return response;
     }
 
-    void requestRefund(String paymentId, long amount) {
+    void requestRefund(String paymentId, String amount) {
         LOG.info("Request refund for amount: {}", amount);
 
         RefundRequest refundRequest = RefundRequest.newBuilder()
                 .setStoreId(storeId.toString())
                 .setPaymentId(paymentId)
-                .setAmount(String.valueOf(amount))
+                .setAmount(amount)
                 .build();
 
         RefundResponse response = paymentClient.requestOnlineRefund(refundRequest);
@@ -84,7 +83,22 @@ public class EcomClient {
         LOG.info("Requested Online Refund - Response: {}", response);
     }
 
-    public List<PaymentDetails> getPayments() {
+    public PaymentDetailsResponse getPaymentDetails(String paymentId) {
+        LOG.info("Get payment details");
+
+        PaymentDetailsRequest paymentDetailsRequest = PaymentDetailsRequest.newBuilder()
+                .setStoreId(storeId.toString())
+                .setPaymentId(paymentId)
+                .build();
+
+        PaymentDetailsResponse response = paymentClient.getPaymentDetails(paymentDetailsRequest);
+
+        LOG.info("PaymentDetailsResponse: {}", response);
+
+        return response;
+    }
+
+    public void getPayments() {
         LOG.info("Get payments");
 
         GetPaymentsRequest getPaymentsRequest = GetPaymentsRequest.newBuilder()
@@ -97,27 +111,24 @@ public class EcomClient {
         LOG.info("Payments: {}", response.stream()
                 .map(p -> "PaymentId: " + p.getPaymentId() + ", OrderId: " + p.getOrderId())
                 .collect(Collectors.joining(", ")));
-        return response;
     }
 
     public static void main(String[] args) throws InterruptedException {
         long amountInPence = 100;
+        String amountString = "1.00"; // Refund request accepts a string with decimal points
 
-        Optional<PaymentDetails> payment;
+        PaymentDetailsResponse.Response paymentDetailsResponse;
         PaymentInitiationResponse paymentResponse = ecomClient.sendPayment(amountInPence);
+        String paymentId = paymentResponse.getResponse().getPaymentId();
 
         // Wait for payment to be complete before refunding it
         do {
             LOG.info("Waiting for online payment to complete");
             Thread.sleep(5000);
-            payment = ecomClient
-                    .getPayments()
-                    .stream()
-                    .filter(c -> c.getPaymentId().equals(paymentResponse.getResponse().getPaymentId()))
-                    .findFirst();
-        } while (payment.isEmpty() || payment.stream().allMatch(e -> e.getStatus() == PaymentDetails.PaymentStatus.PENDING));
+            paymentDetailsResponse = ecomClient.getPaymentDetails(paymentId).getResponse();
+        } while (!paymentDetailsResponse.hasPspReference() || paymentDetailsResponse.getStatus() == PaymentDetailsResponse.Response.PaymentStatus.PENDING);
 
-        ecomClient.requestRefund(paymentResponse.getResponse().getPaymentUrl(), amountInPence);
+        ecomClient.requestRefund(paymentId, amountString);
     }
 
     public static class SendPaymentCommand implements PaymentCommand {

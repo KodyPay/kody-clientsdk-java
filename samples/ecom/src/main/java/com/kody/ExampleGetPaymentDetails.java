@@ -1,8 +1,8 @@
 package com.kody;
 
 import com.kodypay.grpc.ecom.v1.KodyEcomPaymentsServiceGrpc;
-import com.kodypay.grpc.ecom.v1.RefundRequest;
-import com.kodypay.grpc.ecom.v1.RefundResponse;
+import com.kodypay.grpc.ecom.v1.PaymentDetailsRequest;
+import com.kodypay.grpc.ecom.v1.PaymentDetailsResponse;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
@@ -13,16 +13,14 @@ import org.slf4j.LoggerFactory;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-
-public class ExampleRequestRefund {
-    private static final Logger LOG = LoggerFactory.getLogger(ExampleRequestRefund.class);
+public class ExampleGetPaymentDetails {
+    private static final Logger LOG = LoggerFactory.getLogger(ExampleGetPaymentDetails.class);
     private static final long TIMEOUT_MS = java.time.Duration.ofMinutes(3).toMillis();
 
     public static void main(String[] args) {
 
-        // Load configuration properties
         Properties properties = loadProperties();
-        var address = properties.getProperty("address", "grpc-developement.kodypay.com");
+        var address = properties.getProperty("address", "grpc-staging.kodypay.com");
         var apiKey = properties.getProperty("apiKey");
         if (apiKey == null) {
             throw new IllegalArgumentException("Invalid config, expected apiKey");
@@ -30,7 +28,6 @@ public class ExampleRequestRefund {
         var storeId = properties.getProperty("storeId");
         var paymentId = properties.getProperty("paymentId");
 
-        // Initialize PaymentClient
         Metadata metadata = new Metadata();
         metadata.put(Metadata.Key.of("X-API-Key", Metadata.ASCII_STRING_MARSHALLER), apiKey);
 
@@ -43,16 +40,13 @@ public class ExampleRequestRefund {
 
         KodyEcomPaymentsServiceGrpc.KodyEcomPaymentsServiceBlockingStub paymentClient = KodyEcomPaymentsServiceGrpc.newBlockingStub(channel);
 
-        // Define refund request
-        RefundRequest refundRequest = RefundRequest.newBuilder()
+        PaymentDetailsRequest paymentDetailsRequest = PaymentDetailsRequest.newBuilder()
                 .setStoreId(storeId)
-                .setAmount("1")
                 .setPaymentId(paymentId)
                 .build();
-        LOG.info("Send refund request");
 
-        RefundResponse refundResponse = paymentClient.refund(refundRequest).next();
-        LOG.info("refundResponse: {}", refundResponse);
+        PaymentDetailsResponse payments = paymentClient.paymentDetails(paymentDetailsRequest);
+        LOG.info("PaymentDetailsResponse: {}", payments);
     }
 
     private static Properties loadProperties() {
