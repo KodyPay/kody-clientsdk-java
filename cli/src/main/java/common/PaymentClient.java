@@ -1,11 +1,11 @@
 package common;
 
-import com.kodypay.grpc.ecom.v1.GetPaymentsRequest;
+import com.kodypay.grpc.ecom.v1.*;
 import com.kodypay.grpc.ecom.v1.GetPaymentsResponse.Response.PaymentDetails;
-import com.kodypay.grpc.ecom.v1.KodyEcomPaymentsServiceGrpc;
-import com.kodypay.grpc.ecom.v1.PaymentInitiationRequest;
-import com.kodypay.grpc.ecom.v1.PaymentInitiationResponse;
 import com.kodypay.grpc.pay.v1.*;
+import com.kodypay.grpc.pay.v1.PaymentDetailsRequest;
+import com.kodypay.grpc.pay.v1.RefundRequest;
+import com.kodypay.grpc.pay.v1.RefundResponse;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
@@ -122,6 +122,12 @@ public class PaymentClient {
         );
 
         return ecomServiceStub.refund(refundRequest).next();
+    }
+
+    public PaymentDetailsResponse getPaymentDetails(com.kodypay.grpc.ecom.v1.PaymentDetailsRequest paymentDetailsRequest) {
+        LOG.debug("get payment details: storeId={} paymentId={}", paymentDetailsRequest.getStoreId(), paymentDetailsRequest.getPaymentId());
+
+        return ecomServiceStub.paymentDetails(paymentDetailsRequest);
     }
 
     public List<PaymentDetails> getPayments(GetPaymentsRequest getPaymentsRequest) {

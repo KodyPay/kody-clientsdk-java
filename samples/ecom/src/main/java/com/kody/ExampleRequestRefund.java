@@ -49,7 +49,7 @@ public class ExampleRequestRefund {
                 .setAmount("1")
                 .setPaymentId(paymentId)
                 .build();
-        LOG.info("sendrequestRefund");
+        LOG.info("Send refund request");
 
         RefundResponse refundResponse = paymentClient.refund(refundRequest).next();
         LOG.info("refundResponse: {}", refundResponse);

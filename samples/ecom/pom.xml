@@ -18,7 +18,7 @@
         <dependency>
             <groupId>com.kodypay.grpc</groupId>
             <artifactId>kody-clientsdk-java</artifactId>
-            <version>0.0.6</version>
+            <version>0.0.8</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
