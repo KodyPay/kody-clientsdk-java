@@ -3,63 +3,47 @@ package com.kody;
 import com.kodypay.grpc.pay.v1.KodyPayTerminalServiceGrpc;
 import com.kodypay.grpc.pay.v1.PayResponse;
 import com.kodypay.grpc.pay.v1.PaymentDetailsRequest;
-import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 public class ExampleGetPaymentDetails {
-    private static final Logger LOG = LoggerFactory.getLogger(ExampleGetPaymentDetails.class);
-    private static final long TIMEOUT_MS = java.time.Duration.ofMinutes(3).toMillis();
+    //TODO: Replace this with the testing or live environment
+    public static final String HOSTNAME = "grpc-staging.kodypay.com";
+    public static final String API_KEY = "API KEY";
 
     public static void main(String[] args) {
-        // Load configuration properties
-        Properties properties = loadProperties();
-        var address = properties.getProperty("address", "grpc-staging.kodypay.com");
-        var apiKey = properties.getProperty("apiKey");
-        if (apiKey == null) {
-            throw new IllegalArgumentException("Environment variable API-KEY is missing");
-        }
-        var storeId = properties.getProperty("storeId");
-        var orderId = properties.getProperty("orderId");
+        //TODO: Replace this with your Store ID
+        String storeId = "STORE ID";
+        //TODO: Replace this with your Order ID
+        String orderId = "ORDER ID";
 
-        Metadata metadata = new Metadata();
-        metadata.put(Metadata.Key.of("X-API-Key", Metadata.ASCII_STRING_MARSHALLER), apiKey);
+        getPaymentDetails(storeId, orderId);
+    }
 
-        ManagedChannel channel = ManagedChannelBuilder
-                .forAddress(address, 443)
-                .idleTimeout(TIMEOUT_MS, TimeUnit.MILLISECONDS)
-                .keepAliveTimeout(TIMEOUT_MS, TimeUnit.MILLISECONDS)
-                .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
-                .build();
-
-        KodyPayTerminalServiceGrpc.KodyPayTerminalServiceBlockingStub paymentClient = KodyPayTerminalServiceGrpc.newBlockingStub(channel);
-
+    private static void getPaymentDetails(String storeId, String orderId) {
+        var paymentClient = createKodyTerminalPaymentsClient();
         PaymentDetailsRequest paymentDetailsRequest = PaymentDetailsRequest.newBuilder()
                 .setStoreId(storeId)
                 .setOrderId(orderId)
                 .build();
-        LOG.info("GetPaymentDetails");
 
+        System.out.println("Fetching payment details...");
         PayResponse payResponse = paymentClient.paymentDetails(paymentDetailsRequest);
-        LOG.info("payResponse: {}", payResponse);
+        System.out.println("Payment details response: " + payResponse);
     }
 
-    private static Properties loadProperties() {
-        Properties properties = new Properties();
-        try (var inputStream = ExampleGetTerminals.class.getClassLoader().getResourceAsStream("config.properties")) {
-            if (inputStream == null) {
-                throw new IllegalArgumentException("Config file 'config.properties' not found in resources folder");
-            }
-            properties.load(inputStream);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load configuration", e);
-        }
-        return properties;
+    private static KodyPayTerminalServiceGrpc.KodyPayTerminalServiceBlockingStub createKodyTerminalPaymentsClient() {
+        Metadata metadata = new Metadata();
+        metadata.put(Metadata.Key.of("X-API-Key", Metadata.ASCII_STRING_MARSHALLER), API_KEY);
+
+        return KodyPayTerminalServiceGrpc.newBlockingStub(ManagedChannelBuilder
+                .forAddress(HOSTNAME, 443)
+                .idleTimeout(3, TimeUnit.MINUTES)
+                .keepAliveTimeout(3, TimeUnit.MINUTES)
+                .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                .build());
     }
 }

@@ -1,68 +1,55 @@
 package com.kody;
 
-import com.kodypay.grpc.pay.v1.*;
-import io.grpc.ManagedChannel;
+import com.kodypay.grpc.pay.v1.CancelRequest;
+import com.kodypay.grpc.pay.v1.CancelResponse;
+import com.kodypay.grpc.pay.v1.KodyPayTerminalServiceGrpc;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 public class ExampleCancelPayment {
-    private static final Logger LOG = LoggerFactory.getLogger(ExampleSendPayment.class);
-    private static final long TIMEOUT_MS = java.time.Duration.ofMinutes(3).toMillis();
+    //TODO: Replace this with the testing or live environment
+    public static final String HOSTNAME = "grpc-staging.kodypay.com";
+    public static final String API_KEY = "API KEY";
 
     public static void main(String[] args) {
-        // Load configuration properties
-        Properties properties = loadProperties();
-        var address = properties.getProperty("address", "grpc-staging.kodypay.com");
-        var apiKey = properties.getProperty("apiKey");
-        var terminalId = properties.getProperty("terminalId");
-        if (apiKey == null) {
-            throw new IllegalArgumentException("Environment variable API-KEY is missing");
-        }
-        var storeId = properties.getProperty("storeId");
-        var orderId = properties.getProperty("orderId");
+        //TODO: Replace this with your Store ID
+        String storeId = "STORE ID";
+        //TODO: Replace this with your Terminal ID
+        String terminalId = "TERMINAL ID";
+        //TODO: Replace this with your Order ID
+        String orderId = "ORDER ID";
+        //TODO: Replace this with your amount
+        String amount = "1000";
 
-        // Initialize PaymentClient
-        Metadata metadata = new Metadata();
-        metadata.put(Metadata.Key.of("X-API-Key", Metadata.ASCII_STRING_MARSHALLER), apiKey);
+        cancelPayment(storeId, terminalId, orderId, amount);
+    }
 
-        ManagedChannel channel = ManagedChannelBuilder
-                .forAddress(address, 443)
-                .idleTimeout(TIMEOUT_MS, TimeUnit.MILLISECONDS)
-                .keepAliveTimeout(TIMEOUT_MS, TimeUnit.MILLISECONDS)
-                .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
-                .build();
-
-        KodyPayTerminalServiceGrpc.KodyPayTerminalServiceBlockingStub paymentClient = KodyPayTerminalServiceGrpc.newBlockingStub(channel);
-
-        // Define terminal request
+    private static void cancelPayment(String storeId, String terminalId, String orderId, String amount) {
+        var paymentClient = createKodyTerminalPaymentsClient();
         CancelRequest cancelRequest = CancelRequest.newBuilder()
                 .setStoreId(storeId)
-                .setAmount(String.valueOf(1000))
+                .setAmount(amount)
                 .setTerminalId(terminalId)
                 .setOrderId(orderId)
                 .build();
-        LOG.info("Cancel Payment in Terminal");
 
+        System.out.println("Canceling payment...");
         CancelResponse cancelResponse = paymentClient.cancel(cancelRequest);
-        LOG.info("cancelResponse: {}", cancelResponse);
+        System.out.println("Cancel response: " + cancelResponse);
     }
 
-    private static Properties loadProperties() {
-        Properties properties = new Properties();
-        try (var inputStream = ExampleGetTerminals.class.getClassLoader().getResourceAsStream("config.properties")) {
-            if (inputStream == null) {
-                throw new IllegalArgumentException("Config file 'config.properties' not found in resources folder");
-            }
-            properties.load(inputStream);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load configuration", e);
-        }
-        return properties;
+    private static KodyPayTerminalServiceGrpc.KodyPayTerminalServiceBlockingStub createKodyTerminalPaymentsClient() {
+        Metadata metadata = new Metadata();
+        metadata.put(Metadata.Key.of("X-API-Key", Metadata.ASCII_STRING_MARSHALLER), API_KEY);
+
+        return KodyPayTerminalServiceGrpc.newBlockingStub(ManagedChannelBuilder
+                .forAddress(HOSTNAME, 443)
+                .idleTimeout(3, TimeUnit.MINUTES)
+                .keepAliveTimeout(3, TimeUnit.MINUTES)
+                .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                .build());
     }
 }
