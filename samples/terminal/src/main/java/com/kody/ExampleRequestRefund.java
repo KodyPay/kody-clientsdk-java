@@ -3,66 +3,50 @@ package com.kody;
 import com.kodypay.grpc.pay.v1.KodyPayTerminalServiceGrpc;
 import com.kodypay.grpc.pay.v1.RefundRequest;
 import com.kodypay.grpc.pay.v1.RefundResponse;
-import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 public class ExampleRequestRefund {
-    private static final Logger LOG = LoggerFactory.getLogger(ExampleRequestRefund.class);
-    private static final long TIMEOUT_MS = java.time.Duration.ofMinutes(3).toMillis();
+    //TODO: Replace this with the testing or live environment
+    public static final String HOSTNAME = "grpc-staging.kodypay.com";
+    public static final String API_KEY = "API KEY";
 
     public static void main(String[] args) {
+        //TODO: Replace this with your Store ID
+        String storeId = "STORE ID";
+        //TODO: Replace this with your Order ID
+        String orderId = "ORDER ID";
+        //TODO: Replace this with your amount
+        String amount = "1000";
 
-        Properties properties = loadProperties();
-        var address = properties.getProperty("address", "grpc-staging.kodypay.com");
-        var apiKey = properties.getProperty("apiKey");
-        if (apiKey == null) {
-            throw new IllegalArgumentException("Environment variable API-KEY is missing");
-        }
-        var storeId = properties.getProperty("storeId");
-        var orderId = properties.getProperty("orderId");
-
-        Metadata metadata = new Metadata();
-        metadata.put(Metadata.Key.of("X-API-Key", Metadata.ASCII_STRING_MARSHALLER), apiKey);
-
-        ManagedChannel channel = ManagedChannelBuilder
-                .forAddress(address, 443)
-                .idleTimeout(TIMEOUT_MS, TimeUnit.MILLISECONDS)
-                .keepAliveTimeout(TIMEOUT_MS, TimeUnit.MILLISECONDS)
-                .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
-                .build();
-
-        KodyPayTerminalServiceGrpc.KodyPayTerminalServiceBlockingStub paymentClient = KodyPayTerminalServiceGrpc.newBlockingStub(channel);
-
-        // Define terminal request
-        RefundRequest refundRequest = RefundRequest.newBuilder()
-                .setStoreId(storeId)
-                .setAmount("1000")
-                .setOrderId(orderId)
-                .build();
-        LOG.info("requestRefund in Terminal");
-
-        RefundResponse refundRepsonse = paymentClient.refund(refundRequest).next();
-        LOG.info("refundRepsonse: {}", refundRepsonse);
-
+        requestRefund(storeId, orderId, amount);
     }
 
-    private static Properties loadProperties() {
-        Properties properties = new Properties();
-        try (var inputStream = ExampleGetTerminals.class.getClassLoader().getResourceAsStream("config.properties")) {
-            if (inputStream == null) {
-                throw new IllegalArgumentException("Config file 'config.properties' not found in resources folder");
-            }
-            properties.load(inputStream);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load configuration", e);
-        }
-        return properties;
+    private static void requestRefund(String storeId, String orderId, String amount) {
+        var paymentClient = createKodyTerminalPaymentsClient();
+        RefundRequest refundRequest = RefundRequest.newBuilder()
+                .setStoreId(storeId)
+                .setAmount(amount)
+                .setOrderId(orderId)
+                .build();
+
+        System.out.println("Requesting refund...");
+        RefundResponse refundResponse = paymentClient.refund(refundRequest).next();
+        System.out.println("Refund response: " + refundResponse);
+    }
+
+    private static KodyPayTerminalServiceGrpc.KodyPayTerminalServiceBlockingStub createKodyTerminalPaymentsClient() {
+        Metadata metadata = new Metadata();
+        metadata.put(Metadata.Key.of("X-API-Key", Metadata.ASCII_STRING_MARSHALLER), API_KEY);
+
+        return KodyPayTerminalServiceGrpc.newBlockingStub(ManagedChannelBuilder
+                .forAddress(HOSTNAME, 443)
+                .idleTimeout(3, TimeUnit.MINUTES)
+                .keepAliveTimeout(3, TimeUnit.MINUTES)
+                .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
+                .build());
     }
 }

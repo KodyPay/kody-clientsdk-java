@@ -3,20 +3,14 @@ package com.kody;
 import com.kodypay.grpc.ecom.v1.KodyEcomPaymentsServiceGrpc;
 import com.kodypay.grpc.ecom.v1.PaymentDetailsRequest;
 import com.kodypay.grpc.ecom.v1.PaymentDetailsResponse;
-import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class ExampleGetPaymentDetails {
-    private static final Logger LOG = LoggerFactory.getLogger(ExampleGetPaymentDetails.class);
-    private static final long TIMEOUT_MS = java.time.Duration.ofMinutes(3).toMillis();
-
     //TODO: Replace this with the testing or live environment
     public static final String HOSTNAME = "grpc-staging.kodypay.com";
     public static final String API_KEY = "API KEY";
