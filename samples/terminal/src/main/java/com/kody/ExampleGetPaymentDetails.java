@@ -3,10 +3,12 @@ package com.kody;
 import com.kodypay.grpc.pay.v1.KodyPayTerminalServiceGrpc;
 import com.kodypay.grpc.pay.v1.PayResponse;
 import com.kodypay.grpc.pay.v1.PaymentDetailsRequest;
+import com.kodypay.grpc.pay.v1.PaymentStatus;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class ExampleGetPaymentDetails {
@@ -30,9 +32,20 @@ public class ExampleGetPaymentDetails {
                 .setOrderId(orderId)
                 .build();
 
-        System.out.println("Fetching payment details...");
         PayResponse payResponse = paymentClient.paymentDetails(paymentDetailsRequest);
+
         System.out.println("Payment details response: " + payResponse);
+        System.out.println("Payment status: " + payResponse.getStatus());
+        System.out.println("Payment receipt json: " + payResponse.getReceiptJson());
+        System.out.println("Payment order ID " + payResponse.getOrderId());
+        System.out.println("Payment created timestamp: " + new Date(payResponse.getDateCreated().getSeconds() * 1000L));
+        if (payResponse.getStatus() == PaymentStatus.SUCCESS) {
+            System.out.println("Payment ext payment reference: " + payResponse.getExtPaymentRef());
+            System.out.println("Payment paid timestamp: " + new Date(payResponse.getDatePaid().getSeconds() * 1000L));
+        }
+        System.out.println("Payment total amount: " + payResponse.getTotalAmount());
+        System.out.println("Payment sale amount: " + payResponse.getSaleAmount());
+        System.out.println("Payment tips amount: " + payResponse.getTipsAmount());
     }
 
     private static KodyPayTerminalServiceGrpc.KodyPayTerminalServiceBlockingStub createKodyTerminalPaymentsClient() {

@@ -7,6 +7,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 
+import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 
 public class ExampleCancelPayment {
@@ -22,23 +23,22 @@ public class ExampleCancelPayment {
         //TODO: Replace this with your Order ID
         String orderId = "ORDER ID";
         //TODO: Replace this with your amount
-        String amount = "1000";
+        BigDecimal amount = new BigDecimal("10.00");
 
         cancelPayment(storeId, terminalId, orderId, amount);
     }
 
-    private static void cancelPayment(String storeId, String terminalId, String orderId, String amount) {
+    private static void cancelPayment(String storeId, String terminalId, String orderId, BigDecimal amount) {
         var paymentClient = createKodyTerminalPaymentsClient();
         CancelRequest cancelRequest = CancelRequest.newBuilder()
                 .setStoreId(storeId)
-                .setAmount(amount)
+                .setAmount(amount.toString())
                 .setTerminalId(terminalId)
                 .setOrderId(orderId)
                 .build();
 
-        System.out.println("Canceling payment...");
         CancelResponse cancelResponse = paymentClient.cancel(cancelRequest);
-        System.out.println("Cancel response: " + cancelResponse);
+        System.out.println("cancelResponse.status: " + cancelResponse.getStatus());
     }
 
     private static KodyPayTerminalServiceGrpc.KodyPayTerminalServiceBlockingStub createKodyTerminalPaymentsClient() {

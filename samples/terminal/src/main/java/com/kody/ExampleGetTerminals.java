@@ -27,7 +27,6 @@ public class ExampleGetTerminals {
                 .setStoreId(storeId)
                 .build();
 
-        System.out.println("Fetching terminals...");
         TerminalsResponse terminalsResponse = paymentClient.terminals(terminalsRequest);
         System.out.println("Terminals response: " + terminalsResponse);
     }

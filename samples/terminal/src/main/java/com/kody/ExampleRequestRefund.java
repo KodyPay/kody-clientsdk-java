@@ -7,6 +7,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 
+import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 
 public class ExampleRequestRefund {
@@ -20,22 +21,23 @@ public class ExampleRequestRefund {
         //TODO: Replace this with your Order ID
         String orderId = "ORDER ID";
         //TODO: Replace this with your amount
-        String amount = "1000";
+        BigDecimal amount = new BigDecimal("10.00");
 
         requestRefund(storeId, orderId, amount);
     }
 
-    private static void requestRefund(String storeId, String orderId, String amount) {
+    private static void requestRefund(String storeId, String orderId, BigDecimal amount) {
         var paymentClient = createKodyTerminalPaymentsClient();
         RefundRequest refundRequest = RefundRequest.newBuilder()
                 .setStoreId(storeId)
-                .setAmount(amount)
+                .setAmount(amount.toString())
                 .setOrderId(orderId)
                 .build();
 
-        System.out.println("Requesting refund...");
         RefundResponse refundResponse = paymentClient.refund(refundRequest).next();
         System.out.println("Refund response: " + refundResponse);
+        System.out.println("refundResponse.status: " + refundResponse.getStatus());
+        System.out.println("refundResponse.orderId: " + refundResponse.getOrderId());
     }
 
     private static KodyPayTerminalServiceGrpc.KodyPayTerminalServiceBlockingStub createKodyTerminalPaymentsClient() {
