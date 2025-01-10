@@ -1,14 +1,8 @@
 name: Java SDK Build & Release JDK21
 
 on:
-  repository_dispatch:
-    types: [tag-push]
   workflow_dispatch:
-    inputs:
-      tag:
-        description: 'source tag'
-        required: true
-        type: string
+
 env:
   GITHUB_ACTOR: ${{ github.actor }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -24,24 +18,24 @@ jobs:
   tagging:
     runs-on: ubuntu-latest
     outputs:
-      tag: ${{ steps.set_tag.outputs.tag }}
-      version: ${{ steps.set_tag.outputs.version }}
-      prerelease: ${{ steps.set_tag.outputs.prerelease }}
+      tag: ${{ steps.tag.outputs.tag }}
+      version: ${{ steps.tag.outputs.version }}
+      prerelease: ${{ steps.tag.outputs.prerelease }}
     steps:
-      - name: Use the tag from the event
-        id: set_tag
+      - name: Fetch head tag from kp-protocols-clientsdk
+        id: tag
         run: |
-          TAG="${{ inputs.tag || github.event.client_payload.tag }}"
-          VERSION=${TAG#v}
-          echo "TAG from event: ${TAG}"
-          echo "tag=${TAG}" >> $GITHUB_OUTPUT
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          if [[ "${TAG}" == *-* ]]; then 
-            echo "prerelease=true" >> $GITHUB_OUTPUT
-          else 
-            echo "prerelease=false" >> $GITHUB_OUTPUT
+          git clone --branch main https://github.com/KodyPay/kp-protocols-clientsdk.git proto-repo
+          cd proto-repo
+          head_tag=$(git describe --tags --exact-match HEAD 2>/dev/null || echo "")
+          if [[ -z "${head_tag}" ]]; then
+            echo "No tag found on the head commit of kp-protocols-clientsdk repo. Failing the action."
+            exit 1
+          else
+            echo "tag=${head_tag}" >> $GITHUB_OUTPUT
+            echo "version=${head_tag#v}" >> $GITHUB_OUTPUT
+            if [[ "${head_tag}" == *-* ]]; then echo "prerelease=true" >> $GITHUB_OUTPUT; else echo "prerelease=false" >> $GITHUB_OUTPUT; fi
           fi
-
 
   publish:
     needs:
