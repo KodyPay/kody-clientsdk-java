@@ -34,21 +34,42 @@ public class ExampleGetPaymentDetails {
 
         PaymentDetailsResponse.Response paymentDetails = paymentClient.paymentDetails(paymentDetailsRequest).getResponse();
 
-        // Payment ID is Kody generated
         System.out.println("Payment ID: " + paymentDetails.getPaymentId());
-        // Payment reference and order ID is set by client
-        System.out.println("Payment reference: " + paymentDetails.getPaymentReference());
-        System.out.println("Payment order ID: " + paymentDetails.getOrderId());
-        // Payment Status enumeration: PENDING, SUCCESS, FAILED, CANCELLED, EXPIRED, UNRECOGNIZED
-        System.out.println("Payment status: " + paymentDetails.getStatus());
-        System.out.println("Payment created timestamp: " + new Date(paymentDetails.getDateCreated().getSeconds() * 1000L));
-        if (paymentDetails.getStatus() == PaymentDetailsResponse.Response.PaymentStatus.SUCCESS) {
-            System.out.println("Payment paid timestamp: " + new Date(paymentDetails.getDatePaid().getSeconds() * 1000L));
+        System.out.println("Payment Status: " + paymentDetails.getStatus());
+        System.out.println("Payment Created Timestamp: " + paymentDetails.getDateCreated().getSeconds() * 1000L);
+
+
+        System.out.println("PaymentData:");
+        var paymentData = paymentDetails.getPaymentData();
+
+        if (paymentData != null) {
+            System.out.println("  PspReference: " + paymentData.getPspReference());
+            System.out.println("  PaymentMethod: " + paymentData.getPaymentMethod());
+            System.out.println("  PaymentMethodVariant: " + paymentData.getPaymentMethodVariant());
+            System.out.println("  AuthStatus: " + paymentData.getAuthStatus());
+            System.out.println("  AuthStatusDate: " + paymentData.getAuthStatusDate());
+
+            // Assuming it is a card payment
+            PaymentDetailsResponse.PaymentData.PaymentCard paymentCard = paymentData.getPaymentCard();
+            if (paymentCard != null) {
+                System.out.println("  PaymentCard:");
+                System.out.println("    CardLast4Digits: " + paymentCard.getCardLast4Digits());
+                System.out.println("    AuthCode: " + paymentCard.getAuthCode());
+                System.out.println("    PaymentToken: " + paymentCard.getPaymentToken());
+            }
         }
-        // Metadata sent by client in the payment initiation
-        System.out.println("Payment order metadata: " + paymentDetails.getOrderMetadata());
-        // Data related with payment method
-        System.out.println("Payment data: " + paymentDetails.getPaymentDataJson());
+
+        System.out.println("SaleData:");
+        var saleData = paymentDetails.getSaleData();
+
+        if (saleData != null) {
+            System.out.println("  AmountMinorUnits: " + saleData.getAmountMinorUnits());
+            System.out.println("  Currency: " + saleData.getCurrency());
+            System.out.println("  OrderId: " + saleData.getOrderId());
+            System.out.println("  PaymentReference: " + saleData.getPaymentReference());
+            System.out.println("  OrderMetadata: " + saleData.getOrderMetadata());
+        }
+
     }
 
     private static KodyEcomPaymentsServiceGrpc.KodyEcomPaymentsServiceBlockingStub createKodyEcomPaymentsClient() {

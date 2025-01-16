@@ -46,6 +46,17 @@ public class ExampleNewPayment {
                 .setCurrency(currencyCode)
                 .setOrderId(orderId)
                 .setReturnUrl(returnUrl)
+                .setCaptureOptions(PaymentInitiationRequest.CaptureOptions.newBuilder()
+                        .setCaptureSettings(PaymentInitiationRequest.CaptureOptions.CaptureSettings.newBuilder()
+                                .setDelayedCapture(true)
+                                .setAutoCaptureStoreCloseTime(false)
+                                .build())
+                        .setReleaseSettings(PaymentInitiationRequest.CaptureOptions.ReleaseSettings.newBuilder()
+                                .setDelayedRelease(true)
+                                .setAutoReleaseIntervalMins(5000)
+                                .setAutoReleaseStoreCloseTime(true)
+                                .build())
+                        .build())
                 .build();
         System.out.println("Send online payment");
 
