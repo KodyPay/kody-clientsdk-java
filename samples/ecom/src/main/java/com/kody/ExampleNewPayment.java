@@ -20,45 +20,76 @@ public class ExampleNewPayment {
         //TODO: Replace this with your Store ID
         String storeId = "STORE ID";
 
-        //TODO: Replace with your internal order ID
-        String orderId = "order_" + UUID.randomUUID();
-        //TODO: Replace with your internal payment reference
-        String paymentReference = "pay_" + UUID.randomUUID();
+        // Example 1: Initiate a payment with default flags
+        initiateEcomPayment(storeId);
 
-        //TODO: Replace this with your store operating currency: ISO 4217
-        String currencyCode = "HKD";
-        //TODO: Set the payment amount in minor units
-        long amountMinorUnits = 1000;
-        //TODO: Set the URL where the payment page will redirect to after the user completes the payment
-        String returnUrl = "https://display-parameters.com/";
-
-        initiateEcomPayment(storeId, paymentReference, orderId, currencyCode, amountMinorUnits, returnUrl);
+        // Example 2: Initiate a payment with CaptureOptions
+        initiateEcomPaymentWithCaptureOptions(storeId);
     }
 
-    public static void initiateEcomPayment(String storeId, String orderId, String paymentReference,
-                                           String currencyCode, long amountMinorUnits, String returnUrl) {
+    public static void initiateEcomPayment(String storeId) {
         var paymentClient = createKodyEcomPaymentsClient();
+
+        // Generate unique order ID and payment reference
+        String orderId = "order_" + UUID.randomUUID();
+        String paymentReference = "pay_" + UUID.randomUUID();
+
+        // Set payment details
+        String currencyCode = "HKD"; // Replace with your store operating currency: ISO 4217
+        long amountMinorUnits = 1000; // Replace with the payment amount in minor units
+        String returnUrl = "https://display-parameters.com/"; // Replace with your return URL
 
         PaymentInitiationRequest paymentInitiationRequest = PaymentInitiationRequest.newBuilder()
                 .setStoreId(storeId)
                 .setPaymentReference(paymentReference)
-                .setAmount(amountMinorUnits)
+                .setAmountMinorUnits(amountMinorUnits)
                 .setCurrency(currencyCode)
                 .setOrderId(orderId)
                 .setReturnUrl(returnUrl)
-                .setCaptureOptions(PaymentInitiationRequest.CaptureOptions.newBuilder()
-                        .setCaptureSettings(PaymentInitiationRequest.CaptureOptions.CaptureSettings.newBuilder()
-                                .setDelayedCapture(true)
-                                .setAutoCaptureStoreCloseTime(false)
-                                .build())
-                        .setReleaseSettings(PaymentInitiationRequest.CaptureOptions.ReleaseSettings.newBuilder()
-                                .setDelayedRelease(true)
-                                .setAutoReleaseIntervalMins(5000)
-                                .setAutoReleaseStoreCloseTime(true)
-                                .build())
+                .build();
+
+        PaymentInitiationResponse paymentInitiationResponse = paymentClient.initiatePayment(paymentInitiationRequest);
+
+        System.out.println("paymentInitiationResponse.paymentUrl: " + paymentInitiationResponse.getResponse().getPaymentUrl());
+        System.out.println("paymentInitiationResponse.paymentId: " + paymentInitiationResponse.getResponse().getPaymentId());
+    }
+
+    public static void initiateEcomPaymentWithCaptureOptions(String storeId) {
+        var paymentClient = createKodyEcomPaymentsClient();
+
+        // Generate unique order ID and payment reference
+        String orderId = "order_" + UUID.randomUUID();
+        String paymentReference = "pay_" + UUID.randomUUID();
+
+        // Set payment details
+        String currencyCode = "HKD"; // Replace with your store operating currency: ISO 4217
+        long amountMinorUnits = 1000; // Replace with the payment amount in minor units
+        String returnUrl = "https://display-parameters.com/"; // Replace with your return URL
+
+        // Configure CaptureOptions
+        PaymentInitiationRequest.CaptureOptions captureOptions = PaymentInitiationRequest.CaptureOptions.newBuilder()
+                .setCaptureSettings(PaymentInitiationRequest.CaptureOptions.CaptureSettings.newBuilder()
+                        .setDelayedCapture(true) // Enable delayed capture
+                        .setAutoCaptureStoreCloseTime(false) // Disable auto-capture at store close time
+                        .build())
+                .setReleaseSettings(PaymentInitiationRequest.CaptureOptions.ReleaseSettings.newBuilder()
+                        .setDelayedRelease(true) // Enable delayed release
+                        .setAutoReleaseIntervalMins(5000) // Set auto-release interval in minutes
+                        .setAutoReleaseStoreCloseTime(true) // Enable auto-release at store close time
                         .build())
                 .build();
-        System.out.println("Send online payment");
+
+        PaymentInitiationRequest paymentInitiationRequest = PaymentInitiationRequest.newBuilder()
+                .setStoreId(storeId)
+                .setPaymentReference(paymentReference)
+                .setAmountMinorUnits(amountMinorUnits)
+                .setCurrency(currencyCode)
+                .setOrderId(orderId)
+                .setReturnUrl(returnUrl)
+                .setCaptureOptions(captureOptions) // Add CaptureOptions to the request
+                .build();
+
+        System.out.println("Sending online payment with CaptureOptions...");
 
         PaymentInitiationResponse paymentInitiationResponse = paymentClient.initiatePayment(paymentInitiationRequest);
         System.out.println("paymentInitiationResponse.paymentUrl: " + paymentInitiationResponse.getResponse().getPaymentUrl());
