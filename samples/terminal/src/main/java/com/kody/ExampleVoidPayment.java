@@ -1,7 +1,7 @@
 package com.kody;
 
-// import com.kodypay.grpc.pay.v1.VoidPaymentRequest;
-// import com.kodypay.grpc.pay.v1.VoidPaymentResponse;
+import com.kodypay.grpc.pay.v1.VoidPaymentRequest;
+import com.kodypay.grpc.pay.v1.VoidPaymentResponse;
 import com.kodypay.grpc.pay.v1.KodyPayTerminalServiceGrpc;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
@@ -24,15 +24,12 @@ public class ExampleVoidPayment {
     private static void voidPayment(String paymentId) {
         var paymentClient = createKodyTerminalPaymentsClient();
 
-        // TODO: Coming soon - Void payment functionality
-        // VoidPaymentRequest voidPaymentRequest = VoidPaymentRequest.newBuilder()
-        //         .setPaymentId(paymentId)
-        //         .build();
-        //
-        // VoidPaymentResponse voidPaymentResponse = paymentClient.void(voidPaymentRequest);
-        // System.out.println("voidPaymentResponse.status: " + voidPaymentResponse.getStatus());
+         VoidPaymentRequest voidPaymentRequest = VoidPaymentRequest.newBuilder()
+                 .setPaymentId(paymentId)
+                 .build();
 
-        System.out.println("Void payment functionality coming soon");
+         VoidPaymentResponse voidPaymentResponse = paymentClient.void(voidPaymentRequest);
+         System.out.println("voidPaymentResponse.status: " + voidPaymentResponse.getStatus());
     }
 
     private static KodyPayTerminalServiceGrpc.KodyPayTerminalServiceBlockingStub createKodyTerminalPaymentsClient() {

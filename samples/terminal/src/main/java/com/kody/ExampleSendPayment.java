@@ -29,8 +29,14 @@ public class ExampleSendPayment {
         BigDecimal amount = new BigDecimal("10.00");
 
         sendRestrictedCardPayment(storeId, terminalId, amount);
-        sendAlipayPaymentQRDisplayOn(storeId, terminalId, amount);
-        sendAlipayPaymentQRDisplayOff(storeId, terminalId, amount);
+        sendQRPaymentQRScannerOn(storeId, terminalId, amount);
+        sendQRPaymentQRScannerOff(storeId, terminalId, amount);
+
+        //TODO: Optional - Replace these with your reference IDs or leave null
+        String paymentReference = "REF-" + System.currentTimeMillis();
+        String orderId = "ORDER-" + System.currentTimeMillis();
+        String idempotencyUuid = UUID.randomUUID().toString();
+        sendIdempotentPayment(storeId, terminalId, amount, paymentReference, orderId, idempotencyUuid);
     }
 
     // Example of a card payment with specific accepted card types
@@ -42,21 +48,20 @@ public class ExampleSendPayment {
                 .setAmount(amount.toString())
                 .setTerminalId(terminalId)
                 .setShowTips(true)
-                // TODO: Coming soon - Card type restriction
-                // .addAcceptsOnly(PayRequest.PaymentMethods.VISA)
-                // .addAcceptsOnly(PayRequest.PaymentMethods.MASTERCARD)
+                .addAcceptsOnly(PayRequest.PaymentMethods.VISA)
+                .addAcceptsOnly(PayRequest.PaymentMethods.MASTERCARD)
                 .build();
 
         PayResponse payResponse = paymentClient.pay(payRequest).next();
         processPaymentResponse(payResponse);
     }
 
-    // Example of an Alipay payment with QR display on
-    private static void sendAlipayPaymentQRDisplayOn(String storeId, String terminalId, BigDecimal amount) {
+    // Example of an Alipay or Wechat Pay payment with QR scanner on
+    private static void sendQRPaymentQRScannerOn(String storeId, String terminalId, BigDecimal amount) {
         var paymentClient = createKodyTerminalPaymentsClient();
 
         PaymentMethod paymentMethod = PaymentMethod.newBuilder()
-                .setPaymentMethodType(PaymentMethodType.ALIPAY)
+                .setPaymentMethodType(PaymentMethodType.E_WALLET)
                 .setActivateQrCodeScanner(true)  // Activate QR code scanner
                 .build();
 
@@ -71,21 +76,38 @@ public class ExampleSendPayment {
         processPaymentResponse(payResponse);
     }
 
-    // Example of an Alipay payment with QR display off
-    private static void sendAlipayPaymentQRDisplayOff(String storeId, String terminalId, BigDecimal amount) {
+    // Example of an Alipay or Wechat Pay payment with QR scanner off
+    private static void sendQRPaymentQRScannerOff(String storeId, String terminalId, BigDecimal amount) {
         var paymentClient = createKodyTerminalPaymentsClient();
 
         PaymentMethod paymentMethod = PaymentMethod.newBuilder()
-                .setPaymentMethodType(PaymentMethodType.ALIPAY)
-                .setActivateQrCodeScanner(false)  // Do not activate QR code scanner
+                .setPaymentMethodType(PaymentMethodType.E_WALLET)
+                .setActivateQrCodeScanner(false)  // De-activate QR code scanner
                 .build();
 
         PayRequest payRequest = PayRequest.newBuilder()
                 .setStoreId(storeId)
                 .setAmount(amount.toString())
                 .setTerminalId(terminalId)
-                .setShowTips(true)
                 .setPaymentMethod(paymentMethod)
+                .build();
+
+        PayResponse payResponse = paymentClient.pay(payRequest).next();
+        processPaymentResponse(payResponse);
+    }
+
+    // Example of a payment with idempotency and reference IDs
+    private static void sendIdempotentPayment(String storeId, String terminalId, BigDecimal amount,
+                                              String paymentReference, String orderId, String idempotencyUuid) {
+        var paymentClient = createKodyTerminalPaymentsClient();
+
+        PayRequest payRequest = PayRequest.newBuilder()
+                .setStoreId(storeId)
+                .setAmount(amount.toString())
+                .setTerminalId(terminalId)
+                .setIdempotencyUuid(idempotencyUuid)
+                .setPaymentReference(paymentReference)
+                .setOrderId(orderId)
                 .build();
 
         PayResponse payResponse = paymentClient.pay(payRequest).next();
