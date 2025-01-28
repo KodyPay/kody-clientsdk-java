@@ -29,9 +29,8 @@ public class ExampleSendPayment {
         BigDecimal amount = new BigDecimal("10.00");
 
         sendRestrictedCardPayment(storeId, terminalId, amount);
-        sendIdempotentPayment(storeId, terminalId, amount);
-        sendQRPaymentDisplayOn(storeId, terminalId, amount);
-        sendQRPaymentDisplayOff(storeId, terminalId, amount);
+        sendAlipayPaymentQRDisplayOn(storeId, terminalId, amount);
+        sendAlipayPaymentQRDisplayOff(storeId, terminalId, amount);
     }
 
     // Example of a card payment with specific accepted card types
@@ -52,30 +51,13 @@ public class ExampleSendPayment {
         processPaymentResponse(payResponse);
     }
 
-    // Example of a payment with idempotency and reference IDs
-    private static void sendIdempotentPayment(String storeId, String terminalId, BigDecimal amount) {
-        var paymentClient = createKodyTerminalPaymentsClient();
-
-        PayRequest payRequest = PayRequest.newBuilder()
-                .setStoreId(storeId)
-                .setAmount(amount.toString())
-                .setTerminalId(terminalId)
-                .setIdempotencyUuid(UUID.randomUUID().toString())
-                .setPaymentReference("REF-" + System.currentTimeMillis())
-                .setOrderId("ORDER-" + System.currentTimeMillis())
-                .build();
-
-        PayResponse payResponse = paymentClient.pay(payRequest).next();
-        processPaymentResponse(payResponse);
-    }
-
-    // Example of an Alipay or Wechat payment with QR display on
-    private static void sendQRPaymentDisplayOn(String storeId, String terminalId, BigDecimal amount) {
+    // Example of an Alipay payment with QR display on
+    private static void sendAlipayPaymentQRDisplayOn(String storeId, String terminalId, BigDecimal amount) {
         var paymentClient = createKodyTerminalPaymentsClient();
 
         PaymentMethod paymentMethod = PaymentMethod.newBuilder()
-                .setPaymentMethodType(PaymentMethodType.CARD)
-                .setActivateQrCodeScanner(true)  // Display QR for customer to scan
+                .setPaymentMethodType(PaymentMethodType.ALIPAY)
+                .setActivateQrCodeScanner(true)  // Activate QR code scanner
                 .build();
 
         PayRequest payRequest = PayRequest.newBuilder()
@@ -89,13 +71,13 @@ public class ExampleSendPayment {
         processPaymentResponse(payResponse);
     }
 
-    // Example of an Alipay or Wechat payment with QR display off
-    private static void sendQRPaymentDisplayOff(String storeId, String terminalId, BigDecimal amount) {
+    // Example of an Alipay payment with QR display off
+    private static void sendAlipayPaymentQRDisplayOff(String storeId, String terminalId, BigDecimal amount) {
         var paymentClient = createKodyTerminalPaymentsClient();
 
         PaymentMethod paymentMethod = PaymentMethod.newBuilder()
-                .setPaymentMethodType(PaymentMethodType.CARD)
-                .setActivateQrCodeScanner(false)  // Do not display QR for customer to scan
+                .setPaymentMethodType(PaymentMethodType.ALIPAY)
+                .setActivateQrCodeScanner(false)  // Do not activate QR code scanner
                 .build();
 
         PayRequest payRequest = PayRequest.newBuilder()
