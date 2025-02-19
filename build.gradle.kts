@@ -28,6 +28,9 @@ java {
     }
 }
 
+tasks.withType<JavaCompile> {
+    options.release.set(8)
+}
 
 dependencies {
     implementation("io.grpc:grpc-protobuf:$grpcVersion")
@@ -65,7 +68,7 @@ mavenPublishing {
         description = "Kody Java gRPC Client"
         url = "https://github.com/KodyPay/kody-clientsdk-java"
         inceptionYear = "2024"
-        licenses{
+        licenses {
             license {
                 name = "MIT License"
                 url = "https://opensource.org/licenses/MIT"
@@ -82,7 +85,6 @@ mavenPublishing {
             connection = "scm:git:git://github.com/KodyPay/kody-clientsdk-java.git"
             developerConnection = "scm:git:ssh://github.com/KodyPay/kody-clientsdk-java.git"
         }
-
         signAllPublications()
         publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     }
