@@ -42,7 +42,7 @@ dependencies {
     implementation("com.kodypay.grpc:kody-clientsdk-java:1.6.3")
 }
 ```
-The library can also be downloaded from [here](https://central.sonatype.com/artifact/com.kodypay.api/kody-clientsdk-java/overview).
+The library can also be downloaded from [here](https://central.sonatype.com/artifact/com.kodypay.grpc/kody-clientsdk-java/overview).
 
 ### Import in code
 
