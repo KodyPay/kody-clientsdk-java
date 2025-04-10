@@ -1,6 +1,6 @@
 # Kody API - Java SDK
 
-This guide provides an overview of using the Kody Payments API and its reference documentation.
+This guide provides an overview of using the Kody API and its reference documentation.
 
 - [Client Libraries](#client-libraries)
 - [Java Installation](#java-installation)
@@ -13,7 +13,7 @@ This guide provides an overview of using the Kody Payments API and its reference
 Kody provides client libraries for many popular languages to access the APIs. If your desired programming language is supported by the client libraries, we recommend that you use this option.
 
 Available languages:
-- Java : https://github.com/KodyPay/kody-clientsdk-java/
+- Java: https://github.com/KodyPay/kody-clientsdk-java/
 - Python: https://github.com/KodyPay/kody-clientsdk-python/
 - PHP: https://github.com/KodyPay/kody-clientsdk-php/
 - .Net: https://github.com/KodyPay/kody-clientsdk-dotnet/
@@ -45,8 +45,11 @@ The library can also be downloaded from [here](https://central.sonatype.com/arti
 ### Import in code
 
 ````java
-import common.PaymentClient;
 import com.kodypay.grpc.pay.v1.*;
+// Or
+import com.kodypay.grpc.ecom.v1.*;
+// Or
+import com.kodypay.grpc.ordering.v1.*;
 ````
 
 ## Authentication
@@ -66,11 +69,11 @@ The test and live API calls are always compatible, only changing credentials and
 ## Documentation
 
 For complete API documentation, examples, and integration guides, please visit:
-https://api-docs.kody.com
+📚 https://api-docs.kody.com
 
 ## Sample code
 
-- Java : https://github.com/KodyPay/kody-clientsdk-java/tree/main/samples
+- Java: https://github.com/KodyPay/kody-clientsdk-java/tree/main/samples
 - Python: https://github.com/KodyPay/kody-clientsdk-python/tree/main/versions/3_12/samples
 - PHP: https://github.com/KodyPay/kody-clientsdk-php/tree/main/samples
 - .Net: https://github.com/KodyPay/kody-clientsdk-dotnet/tree/main/samples
