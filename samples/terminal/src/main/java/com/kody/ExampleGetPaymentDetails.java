@@ -40,7 +40,7 @@ public class ExampleGetPaymentDetails {
         System.out.println("Payment order ID " + payResponse.getOrderId());
         System.out.println("Payment created timestamp: " + new Date(payResponse.getDateCreated().getSeconds() * 1000L));
         if (payResponse.getStatus() == PaymentStatus.SUCCESS) {
-            System.out.println("Payment ext payment reference: " + payResponse.getExtPaymentRef());
+            System.out.println("Payment ext payment reference: " + payResponse.getPaymentReference());
             System.out.println("Payment paid timestamp: " + new Date(payResponse.getDatePaid().getSeconds() * 1000L));
         }
         System.out.println("Payment total amount: " + payResponse.getTotalAmount());
