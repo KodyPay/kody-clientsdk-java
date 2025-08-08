@@ -4,8 +4,7 @@ import cli.Command;
 import cli.EcomPaymentInput;
 import cli.PaymentCommand;
 import com.kodypay.grpc.ecom.v1.*;
-import com.kodypay.grpc.ecom.v1.GetPaymentsResponse.Response.PaymentDetails;
-import com.kodypay.grpc.sdk.common.PageCursor;
+import com.kodypay.grpc.ecom.v1.PaymentDetailsResponse.PaymentDetails;
 import common.CurrencyEnum;
 import common.PaymentClient;
 import org.jline.reader.LineReader;
@@ -53,7 +52,7 @@ public class EcomClient {
         PaymentInitiationRequest paymentInitiationRequest = PaymentInitiationRequest.newBuilder()
                 .setStoreId(storeId.toString())
                 .setPaymentReference(paymentReference)
-                .setAmount(amount)
+                .setAmountMinorUnits(amount)
                 .setCurrency(currency)
                 .setOrderId(orderId)
                 .setReturnUrl("returnUrl")
@@ -103,7 +102,7 @@ public class EcomClient {
 
         GetPaymentsRequest getPaymentsRequest = GetPaymentsRequest.newBuilder()
                 .setStoreId(storeId.toString())
-                .setPageCursor(PageCursor.newBuilder().setPageSize(1).build())
+                .setPageCursor(GetPaymentsRequest.PageCursor.newBuilder().setPageSize(1).build())
                 .build();
 
         List<PaymentDetails> response = paymentClient.getPayments(getPaymentsRequest);
@@ -117,7 +116,7 @@ public class EcomClient {
         long amountInPence = 100;
         String amountString = "1.00"; // Refund request accepts a string with decimal points
 
-        PaymentDetailsResponse.Response paymentDetailsResponse;
+        PaymentDetailsResponse.PaymentDetails paymentDetailsResponse;
         PaymentInitiationResponse paymentResponse = ecomClient.sendPayment(amountInPence);
         String paymentId = paymentResponse.getResponse().getPaymentId();
 
@@ -126,7 +125,7 @@ public class EcomClient {
             LOG.info("Waiting for online payment to complete");
             Thread.sleep(5000);
             paymentDetailsResponse = ecomClient.getPaymentDetails(paymentId).getResponse();
-        } while (!paymentDetailsResponse.hasPspReference() || paymentDetailsResponse.getStatus() == PaymentDetailsResponse.Response.PaymentStatus.PENDING);
+        } while (!paymentDetailsResponse.hasPspReference() || paymentDetailsResponse.getStatus() == PaymentStatus.PENDING);
 
         ecomClient.requestRefund(paymentId, amountString);
     }

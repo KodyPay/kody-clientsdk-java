@@ -1,9 +1,10 @@
 package common;
 
 import com.kodypay.grpc.ecom.v1.*;
-import com.kodypay.grpc.ecom.v1.GetPaymentsResponse.Response.PaymentDetails;
+import com.kodypay.grpc.ecom.v1.PaymentDetailsResponse.PaymentDetails;
 import com.kodypay.grpc.pay.v1.*;
 import com.kodypay.grpc.pay.v1.PaymentDetailsRequest;
+import com.kodypay.grpc.pay.v1.PaymentStatus;
 import com.kodypay.grpc.pay.v1.RefundRequest;
 import com.kodypay.grpc.pay.v1.RefundResponse;
 import io.grpc.ManagedChannel;
@@ -71,14 +72,14 @@ public class PaymentClient {
                 cancelRequest.getStoreId(),
                 cancelRequest.getAmount(),
                 cancelRequest.getTerminalId(),
-                cancelRequest.getOrderId()
+                cancelRequest.getPaymentId()
         );
 
         return terminalServiceStub.cancel(cancelRequest).getStatus();
     }
 
     public RefundResponse requestTerminalRefund(RefundRequest refundRequest) {
-        LOG.debug("requestTerminalRefund: storeId={}, amount={}, orderId={}", refundRequest.getStoreId(), refundRequest.getAmount(), refundRequest.getOrderId());
+        LOG.debug("requestTerminalRefund: storeId={}, amount={}, orderId={}", refundRequest.getStoreId(), refundRequest.getAmount(), refundRequest.getPaymentId());
 
         return terminalServiceStub.refund(refundRequest).next();
     }
@@ -103,7 +104,7 @@ public class PaymentClient {
         LOG.debug("sendOnlinePayment: storeId={}, paymentReference={}, amount={}, currency={}, orderId={}, returnUrl={} (address: {})",
                 paymentInitiationRequest.getStoreId(),
                 paymentInitiationRequest.getPaymentReference(),
-                paymentInitiationRequest.getAmount(),
+                paymentInitiationRequest.getAmountMinorUnits(),
                 paymentInitiationRequest.getCurrency(),
                 paymentInitiationRequest.getOrderId(),
                 paymentInitiationRequest.getReturnUrl(),
