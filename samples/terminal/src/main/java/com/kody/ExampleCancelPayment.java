@@ -20,21 +20,21 @@ public class ExampleCancelPayment {
         String storeId = "STORE ID";
         //TODO: Replace this with your Terminal ID
         String terminalId = "TERMINAL ID";
-        //TODO: Replace this with your Order ID
-        String orderId = "ORDER ID";
+        //TODO: Replace this with your Payment ID
+        String paymentId = "PAYMENT ID";
         //TODO: Replace this with your amount
         BigDecimal amount = new BigDecimal("10.00");
 
-        cancelPayment(storeId, terminalId, orderId, amount);
+        cancelPayment(storeId, terminalId, paymentId, amount);
     }
 
-    private static void cancelPayment(String storeId, String terminalId, String orderId, BigDecimal amount) {
+    private static void cancelPayment(String storeId, String terminalId, String paymentId, BigDecimal amount) {
         var paymentClient = createKodyTerminalPaymentsClient();
         CancelRequest cancelRequest = CancelRequest.newBuilder()
                 .setStoreId(storeId)
                 .setAmount(amount.toString())
                 .setTerminalId(terminalId)
-                .setOrderId(orderId)
+                .setPaymentId(paymentId)
                 .build();
 
         CancelResponse cancelResponse = paymentClient.cancel(cancelRequest);

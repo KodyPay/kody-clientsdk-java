@@ -81,37 +81,37 @@ public class TerminalClient {
         return response;
     }
 
-    public PaymentStatus cancelPayment(String amountStr, String orderId) {
-        LOG.info("Cancel payment: {} with amount: {}", orderId, amountStr);
+    public PaymentStatus cancelPayment(String amountStr, String paymentId) {
+        LOG.info("Cancel payment: {} with amount: {}", paymentId, amountStr);
         BigDecimal amount = new BigDecimal(amountStr);
 
         CancelRequest cancelRequest = CancelRequest.newBuilder()
                 .setStoreId(storeId.toString())
                 .setAmount(amount.toPlainString())
                 .setTerminalId(exTerminalId)
-                .setOrderId(orderId)
+                .setPaymentId(paymentId)
                 .build();
 
         PaymentStatus response = paymentClient.cancelPayment(cancelRequest);
 
-        LOG.info("Cancelled Payment: {} = {}", orderId, response);
+        LOG.info("Cancelled Payment: {} = {}", paymentId, response);
 
         return response;
     }
 
-    public RefundResponse requestRefund(String amountStr, String orderId) throws InterruptedException {
-        LOG.info("Requesting refund for amount: {} for orderId: {}", amountStr, orderId);
+    public RefundResponse requestRefund(String amountStr, String paymentId) throws InterruptedException {
+        LOG.info("Requesting refund for amount: {} for orderId: {}", amountStr, paymentId);
 
         BigDecimal amount = new BigDecimal(amountStr);
         RefundRequest refundRequest = RefundRequest.newBuilder()
                 .setStoreId(storeId.toString())
                 .setAmount(amount.toPlainString())
-                .setOrderId(orderId)
+                .setPaymentId(paymentId)
                 .build();
 
         RefundResponse response = paymentClient.requestTerminalRefund(refundRequest);
 
-        LOG.info("Refunded payment: {} = {}", orderId, dump(response));
+        LOG.info("Refunded payment: {} = {}", paymentId, dump(response));
 
         return response;
     }
@@ -140,18 +140,18 @@ public class TerminalClient {
 
         listTerminals();
 
-        var orderId = terminalClient.sendPayment(amountStr, isShowTips, paymentMethodType).getOrderId();
-        LOG.info("Completed order: {}", orderId);
+        var paymentId = terminalClient.sendPayment(amountStr, isShowTips, paymentMethodType).getOrderId();
+        LOG.info("Completed order: {}", paymentId);
 
-        var status = terminalClient.getDetails(orderId).getStatus();
+        var status = terminalClient.getDetails(paymentId).getStatus();
         LOG.info("Payment status: {}", status);
 
         Thread.sleep(5000);
-        var refundStatus = terminalClient.requestRefund(amountStr, orderId).getStatus();
+        var refundStatus = terminalClient.requestRefund(amountStr, paymentId).getStatus();
         LOG.info("Refund status: {}", refundStatus);
 
         if (status == PaymentStatus.PENDING) {
-            PaymentStatus response = terminalClient.cancelPayment(amountStr, orderId);
+            PaymentStatus response = terminalClient.cancelPayment(amountStr, paymentId);
             LOG.info("Order is cancelled? {}", response == PaymentStatus.CANCELLED);
         }
     }
