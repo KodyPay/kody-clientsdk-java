@@ -28,7 +28,7 @@ public class ExampleVoidPayment {
                  .setPaymentId(paymentId)
                  .build();
 
-         VoidPaymentResponse voidPaymentResponse = paymentClient.void(voidPaymentRequest);
+         VoidPaymentResponse voidPaymentResponse = paymentClient.void_(voidPaymentRequest);
          System.out.println("voidPaymentResponse.status: " + voidPaymentResponse.getStatus());
     }
 

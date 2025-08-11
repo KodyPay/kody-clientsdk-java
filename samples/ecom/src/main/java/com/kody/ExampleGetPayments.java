@@ -1,9 +1,6 @@
 package com.kody;
 
-import com.kodypay.grpc.ecom.v1.GetPaymentsRequest;
-import com.kodypay.grpc.ecom.v1.GetPaymentsResponse;
-import com.kodypay.grpc.ecom.v1.KodyEcomPaymentsServiceGrpc;
-import com.kodypay.grpc.sdk.common.PageCursor;
+import com.kodypay.grpc.ecom.v1.*;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
@@ -28,10 +25,11 @@ public class ExampleGetPayments {
 
         GetPaymentsRequest getPaymentsRequest = GetPaymentsRequest.newBuilder()
                 .setStoreId(storeId)
-                .setPageCursor(PageCursor.newBuilder().setPageSize(10)).build();
+                .setPageCursor(GetPaymentsRequest.PageCursor.newBuilder().setPageSize(10))
+                .build();
 
         GetPaymentsResponse payments = paymentClient.getPayments(getPaymentsRequest);
-        for (GetPaymentsResponse.Response.PaymentDetails payment : payments.getResponse().getPaymentsList()) {
+        for (PaymentDetailsResponse.PaymentDetails payment : payments.getResponse().getPaymentsList()) {
             // Payment ID is Kody generated
             System.out.println("Payment ID: " + payment.getPaymentId());
             // Payment reference and order ID is set by client
@@ -40,7 +38,7 @@ public class ExampleGetPayments {
             // Payment Status enumeration: PENDING, SUCCESS, FAILED, CANCELLED, EXPIRED, UNRECOGNIZED
             System.out.println("Payment status: " + payment.getStatus());
             System.out.println("Payment created timestamp: " + new Date(payment.getDateCreated().getSeconds() * 1000L));
-            if (payment.getStatus() == GetPaymentsResponse.Response.PaymentDetails.PaymentStatus.SUCCESS) {
+            if (payment.getStatus() == PaymentStatus.SUCCESS) {
                 System.out.println("Payment paid timestamp: " + new Date(payment.getDatePaid().getSeconds() * 1000L));
             }
             // Metadata sent by client in the payment initiation

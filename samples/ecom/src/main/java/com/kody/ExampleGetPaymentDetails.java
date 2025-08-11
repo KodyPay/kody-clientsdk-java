@@ -32,7 +32,7 @@ public class ExampleGetPaymentDetails {
                 .setPaymentId(paymentId)
                 .build();
 
-        PaymentDetailsResponse.Response paymentDetails = paymentClient.paymentDetails(paymentDetailsRequest).getResponse();
+        PaymentDetailsResponse.PaymentDetails paymentDetails = paymentClient.paymentDetails(paymentDetailsRequest).getResponse();
 
         System.out.println("Payment ID: " + paymentDetails.getPaymentId());
         System.out.println("Payment Status: " + paymentDetails.getStatus());
@@ -75,6 +75,7 @@ public class ExampleGetPaymentDetails {
     private static KodyEcomPaymentsServiceGrpc.KodyEcomPaymentsServiceBlockingStub createKodyEcomPaymentsClient() {
         Metadata metadata = new Metadata();
         metadata.put(Metadata.Key.of("X-API-Key", Metadata.ASCII_STRING_MARSHALLER), API_KEY);
+
         return KodyEcomPaymentsServiceGrpc.newBlockingStub(ManagedChannelBuilder
                 .forAddress(HOSTNAME, 443)
                 .idleTimeout(3, TimeUnit.MINUTES)

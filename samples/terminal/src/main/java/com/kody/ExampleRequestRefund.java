@@ -31,7 +31,7 @@ public class ExampleRequestRefund {
         RefundRequest refundRequest = RefundRequest.newBuilder()
                 .setStoreId(storeId)
                 .setAmount(amount.toString())
-                .setOrderId(orderId)
+                .setExtOrderId(orderId)
                 .build();
 
         RefundResponse refundResponse = paymentClient.refund(refundRequest).next();
