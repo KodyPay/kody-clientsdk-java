@@ -59,6 +59,7 @@ public class ExampleReleaseAuthorisation {
     private static void processReleaseAuthResponse(ReleaseAuthorisationResponse response) {
         // Release is processed asynchronously, and the final status can be queried through the GetPreAuthorisation interface.
         System.out.println("Release Ref: " + response.getReleaseReference());
+        System.out.println("Release Status: " + response.getStatus());
         System.out.println("PspReference: " + response.getPspReference());
         System.out.println("ReleasedAt: " + response.getReleasedAt());
     }

@@ -69,6 +69,7 @@ public class ExampleCaptureAuthorisation {
         // Capture is processed asynchronously, and the final status can be queried through the GetPreAuthorisation interface.
         System.out.println("Capture Id: " + response.getCaptureId());
         System.out.println("Capture Ref: " + response.getCaptureReference());
+        System.out.println("Capture Status: " + response.getStatus());
         System.out.println("PspReference: " + response.getPspReference());
         System.out.println("CapturedAt: " + response.getCapturedAt());
     }
