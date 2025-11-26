@@ -1,12 +1,13 @@
 package com.kody;
 
-import com.kodypay.grpc.preauth.v1.*;
+import com.kodypay.grpc.preauth.v1.AuthStatus;
+import com.kodypay.grpc.preauth.v1.GetPreAuthorisationRequest;
+import com.kodypay.grpc.preauth.v1.GetPreAuthorisationResponse;
+import com.kodypay.grpc.preauth.v1.KodyPreAuthTerminalServiceGrpc;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 
-import java.util.Iterator;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class ExampleGetPreAuthorisation {

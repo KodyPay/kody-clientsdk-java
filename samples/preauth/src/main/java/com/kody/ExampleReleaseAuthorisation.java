@@ -1,6 +1,5 @@
 package com.kody;
 
-import com.kodypay.grpc.preauth.v1.AuthStatus;
 import com.kodypay.grpc.preauth.v1.KodyPreAuthTerminalServiceGrpc;
 import com.kodypay.grpc.preauth.v1.ReleaseAuthorisationRequest;
 import com.kodypay.grpc.preauth.v1.ReleaseAuthorisationResponse;
@@ -8,7 +7,6 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 
-import java.util.Iterator;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 

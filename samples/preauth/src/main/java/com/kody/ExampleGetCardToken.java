@@ -1,7 +1,6 @@
 package com.kody;
 
 import com.kodypay.grpc.common.CardTokenStatus;
-import com.kodypay.grpc.pay.v1.CreateCardTokenRequest;
 import com.kodypay.grpc.pay.v1.GetCardTokenRequest;
 import com.kodypay.grpc.pay.v1.KodyTerminalTokenServiceGrpc;
 import com.kodypay.grpc.pay.v1.TokenDetailsResponse;
@@ -9,8 +8,6 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 
-import java.util.Iterator;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class ExampleGetCardToken {
