@@ -73,7 +73,7 @@ public class ExampleReleaseAuthorisation {
             case RELEASE_FAILED:
                 System.out.println("Release failed: " + response.getReleaseReference());
                 break;
-            case UNRECOGNIZED:
+            case AUTH_STATUS_UNSPECIFIED, UNRECOGNIZED:
                 System.out.println("Release status unknown: " + response.getReleaseReference());
                 break;
         }

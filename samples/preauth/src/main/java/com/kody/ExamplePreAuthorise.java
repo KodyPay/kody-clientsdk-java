@@ -82,7 +82,7 @@ public class ExamplePreAuthorise {
             case FAILED, EXPIRED, CANCELLED, DECLINED:
                 System.out.println("Pre-Auth failed: " + response.getPreAuthId());
                 break;
-            case UNRECOGNIZED:
+            case AUTH_STATUS_UNSPECIFIED, UNRECOGNIZED:
                 System.out.println("Pre-Auth status unknown: " + response.getPreAuthId());
                 break;
         }

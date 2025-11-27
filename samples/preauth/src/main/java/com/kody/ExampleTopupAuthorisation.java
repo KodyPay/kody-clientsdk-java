@@ -78,7 +78,7 @@ public class ExampleTopupAuthorisation {
             case TOP_UP_FAILED:
                 System.out.println("TopUp failed: " + response.getTopupId());
                 break;
-            case UNRECOGNIZED:
+            case AUTH_STATUS_UNSPECIFIED, UNRECOGNIZED:
                 System.out.println("TopUp status unknown: " + response.getTopupId());
                 break;
         }

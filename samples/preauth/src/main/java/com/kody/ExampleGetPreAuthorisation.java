@@ -64,15 +64,39 @@ public class ExampleGetPreAuthorisation {
             case FAILED, EXPIRED, CANCELLED, DECLINED:
                 System.out.println("Pre-Auth failed: " + response.getPreAuthId());
                 break;
-            case UNRECOGNIZED:
+            case PENDING_RELEASE:
+                System.out.println("Pre-Auth pending release: " + response.getPreAuthId());
+                break;
+            case RELEASED:
+                System.out.println("Pre-Auth released: " + response.getPreAuthId());
+                break;
+            case PENDING_CAPTURE:
+                System.out.println("Pre-Auth pending capture: " + response.getPreAuthId());
+                break;
+            case CAPTURED:
+                System.out.println("Pre-Auth captured: " + response.getPreAuthId());
+                break;
+            case AUTH_STATUS_UNSPECIFIED, UNRECOGNIZED:
                 System.out.println("Pre-Auth status unknown: " + response.getPreAuthId());
                 break;
         }
         for (var adjustment : response.getAdjustmentsList()) {
             System.out.println("Adjustment ID: " + adjustment.getAdjustmentId() + ", Adjustment Amount: " + adjustment.getAmountMinorUnits() + ", Adjustment Status: " + adjustment.getStatus());
+            switch (adjustment.getStatus()) {
+                case ADJUSTMENT_SUCCESS ->  System.out.println("Adjustment success: " + adjustment.getAdjustmentId());
+                case ADJUSTMENT_ERROR ->  System.out.println("Adjustment failed: " + adjustment.getAdjustmentId());
+                case ADJUSTMENT_PENDING ->   System.out.println("Adjustment pending: " + adjustment.getAdjustmentId());
+                case ADJUSTMENT_STATUS_UNSPECIFIED, UNRECOGNIZED ->   System.out.println("Adjustment status unknown: " + adjustment.getAdjustmentId());
+            }
         }
         for (var capture : response.getCapturesList()) {
             System.out.println("Capture ID: " + capture.getCaptureId() + ", Capture Amount: " + capture.getAmountMinorUnits() + ", Capture Status: " + capture.getStatus());
+            switch (capture.getStatus()) {
+                case CAPTURE_SUCCESS ->  System.out.println("Capture success: " + capture.getCaptureId());
+                case CAPTURE_FAILED ->  System.out.println("Capture failed: " + capture.getCaptureId());
+                case CAPTURE_PENDING ->   System.out.println("Capture pending: " + capture.getCaptureId());
+                case CAPTURE_STATUS_UNSPECIFIED, UNRECOGNIZED ->   System.out.println("Capture status unknown: " + capture.getCaptureId());
+            }
         }
     }
 }

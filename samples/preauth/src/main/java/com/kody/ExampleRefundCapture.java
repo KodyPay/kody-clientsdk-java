@@ -80,7 +80,7 @@ public class ExampleRefundCapture {
             case REFUND_FAILED:
                 System.out.println("Refund failed: " + response.getFailureReason());
                 break;
-            case UNRECOGNIZED:
+            case REFUND_STATUS_UNSPECIFIED, UNRECOGNIZED:
                 System.out.println("Refund status unknown: " + response.getRefundReference());
                 break;
         }

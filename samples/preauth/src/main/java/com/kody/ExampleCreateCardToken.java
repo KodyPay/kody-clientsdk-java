@@ -92,7 +92,7 @@ public class ExampleCreateCardToken {
             case FAILED:
                 System.out.println("Token failed: " + response.getTokenId());
                 break;
-            case UNRECOGNIZED:
+            case UNKNOWN_STATUS, UNRECOGNIZED:
                 System.out.println("TopUp status unknown: " + response.getTokenId());
                 break;
         }
