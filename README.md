@@ -37,10 +37,10 @@ Install the Kody Java Client SDK using the following gradle snippet:
 
 ```kts
 dependencies {
-    implementation("com.kodypay.grpc:kody-clientsdk-java:1.6.3")
+    implementation("com.kodypay.grpc:kody-clientsdk-java:1.7.30")
 }
 ```
-The library can also be downloaded from [here](https://central.sonatype.com/artifact/com.kodypay.api/kody-clientsdk-java/overview).
+The library can also be downloaded from [here](https://central.sonatype.com/artifact/com.kodypay.grpc/kody-clientsdk-java).
 
 ### Import in code
 

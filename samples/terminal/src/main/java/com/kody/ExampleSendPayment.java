@@ -1,17 +1,13 @@
 package com.kody;
 
-import com.kodypay.grpc.pay.v1.KodyPayTerminalServiceGrpc;
-import com.kodypay.grpc.pay.v1.PayRequest;
-import com.kodypay.grpc.pay.v1.PayResponse;
-import com.kodypay.grpc.pay.v1.PaymentMethod;
-import com.kodypay.grpc.pay.v1.PaymentMethodType;
-import com.kodypay.grpc.pay.v1.PaymentStatus;
+import com.kodypay.grpc.pay.v1.*;
 
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.stub.MetadataUtils;
 
 import java.math.BigDecimal;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 import java.util.UUID;
 
@@ -52,8 +48,11 @@ public class ExampleSendPayment {
                 .addAcceptsOnly(PayRequest.PaymentMethods.MASTERCARD)
                 .build();
 
-        PayResponse payResponse = paymentClient.pay(payRequest).next();
-        processPaymentResponse(payResponse);
+        Iterator<PayResponse> responseIterator = paymentClient.pay(payRequest);
+        while (responseIterator.hasNext()) {
+            PayResponse payResponse = responseIterator.next();
+            processPaymentResponse(payResponse);
+        }
     }
 
     // Example of an Alipay or Wechat Pay payment with QR scanner on
@@ -72,8 +71,11 @@ public class ExampleSendPayment {
                 .setPaymentMethod(paymentMethod)
                 .build();
 
-        PayResponse payResponse = paymentClient.pay(payRequest).next();
-        processPaymentResponse(payResponse);
+        Iterator<PayResponse> responseIterator = paymentClient.pay(payRequest);
+        while (responseIterator.hasNext()) {
+            PayResponse payResponse = responseIterator.next();
+            processPaymentResponse(payResponse);
+        }
     }
 
     // Example of an Alipay or Wechat Pay payment with QR scanner off
@@ -92,8 +94,11 @@ public class ExampleSendPayment {
                 .setPaymentMethod(paymentMethod)
                 .build();
 
-        PayResponse payResponse = paymentClient.pay(payRequest).next();
-        processPaymentResponse(payResponse);
+        Iterator<PayResponse> responseIterator = paymentClient.pay(payRequest);
+        while (responseIterator.hasNext()) {
+            PayResponse payResponse = responseIterator.next();
+            processPaymentResponse(payResponse);
+        }
     }
 
     // Example of a payment with idempotency and reference IDs
@@ -110,8 +115,11 @@ public class ExampleSendPayment {
                 .setOrderId(orderId)
                 .build();
 
-        PayResponse payResponse = paymentClient.pay(payRequest).next();
-        processPaymentResponse(payResponse);
+        Iterator<PayResponse> responseIterator = paymentClient.pay(payRequest);
+        while (responseIterator.hasNext()) {
+            PayResponse payResponse = responseIterator.next();
+            processPaymentResponse(payResponse);
+        }
     }
 
     private static KodyPayTerminalServiceGrpc.KodyPayTerminalServiceBlockingStub createKodyTerminalPaymentsClient() {
