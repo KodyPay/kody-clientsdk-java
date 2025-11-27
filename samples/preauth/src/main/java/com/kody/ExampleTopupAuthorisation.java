@@ -67,12 +67,20 @@ public class ExampleTopupAuthorisation {
     private static void processTopUpAuthResponse(TopUpAuthorisationResponse response) {
         System.out.println("TopUp ID: " + response.getTopupId() + ", TopUp Status: " + response.getStatus());
 
-        if (response.getStatus() == AuthStatus.AUTHORISED) {
-            System.out.println("PspReference: " + response.getPspReference());
-        } else if (response.getStatus() == AuthStatus.PENDING_AUTHORISATION) {
-            System.out.println("TopUp pending: " + response.getTopupId());
-        } else if (response.getStatus() == AuthStatus.FAILED) {
-            System.out.println("TopUp failed: " + response.getTopupId());
+        switch (response.getStatus()) {
+            case AUTHORISED:
+                System.out.println("TopUp success: " + response.getTopupId());
+                System.out.println("PspReference: " + response.getPspReference());
+                break;
+            case PENDING_TOP_UP:
+                System.out.println("TopUp pending: " + response.getTopupId());
+                break;
+            case TOP_UP_FAILED:
+                System.out.println("TopUp failed: " + response.getTopupId());
+                break;
+            case UNRECOGNIZED:
+                System.out.println("TopUp status unknown: " + response.getTopupId());
+                break;
         }
     }
 }

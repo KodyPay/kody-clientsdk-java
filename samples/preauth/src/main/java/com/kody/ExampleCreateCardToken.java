@@ -80,13 +80,21 @@ public class ExampleCreateCardToken {
     private static void processTokenisationResponse(TokenDetailsResponse response) {
         System.out.println("Token ID: " + response.getTokenId() + ", Token Status: " + response.getStatus());
 
-        if (response.getStatus() == CardTokenStatus.READY) {
-            System.out.println("Payment Token: " + response.getPaymentToken());
-            System.out.println("Card Info: " +  response.getCardInfo());
-        } else if (response.getStatus() == CardTokenStatus.PENDING) {
-            System.out.println("Token pending: " + response.getTokenId());
-        } else if (response.getStatus() == CardTokenStatus.FAILED) {
-            System.out.println("Token failed: " + response.getTokenId());
+        switch (response.getStatus()) {
+            case READY:
+                System.out.println("Token success: " + response.getTokenId());
+                System.out.println("Payment Token: " + response.getPaymentToken());
+                System.out.println("Card Info: " +  response.getCardInfo());
+                break;
+            case PENDING:
+                System.out.println("Token pending: " + response.getTokenId());
+                break;
+            case FAILED:
+                System.out.println("Token failed: " + response.getTokenId());
+                break;
+            case UNRECOGNIZED:
+                System.out.println("TopUp status unknown: " + response.getTokenId());
+                break;
         }
     }
 }

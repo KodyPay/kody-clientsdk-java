@@ -53,12 +53,26 @@ public class ExampleGetPreAuthorisation {
     private static void processGetPreAuthResponse(GetPreAuthorisationResponse response) {
         System.out.println("PreAuth ID: " + response.getPreAuthId() + ", PreAuth Status: " + response.getStatus());
 
-        if (response.getStatus() == AuthStatus.AUTHORISED) {
-            System.out.println("PspReference: " + response.getPspReference());
-        } else if (response.getStatus() == AuthStatus.PENDING_AUTHORISATION) {
-            System.out.println("Pre-Auth pending: " + response.getPreAuthId());
-        } else if (response.getStatus() == AuthStatus.FAILED) {
-            System.out.println("Pre-Auth failed: " + response.getPreAuthId());
+        switch (response.getStatus()) {
+            case AUTHORISED:
+                System.out.println("Pre-Auth success: " + response.getPreAuthId());
+                System.out.println("PspReference: " + response.getPspReference());
+                break;
+            case PENDING_AUTHORISATION:
+                System.out.println("Pre-Auth pending: " + response.getPreAuthId());
+                break;
+            case FAILED, EXPIRED, CANCELLED, DECLINED:
+                System.out.println("Pre-Auth failed: " + response.getPreAuthId());
+                break;
+            case UNRECOGNIZED:
+                System.out.println("Pre-Auth status unknown: " + response.getPreAuthId());
+                break;
+        }
+        for (var adjustment : response.getAdjustmentsList()) {
+            System.out.println("Adjustment ID: " + adjustment.getAdjustmentId() + ", Adjustment Amount: " + adjustment.getAmountMinorUnits() + ", Adjustment Status: " + adjustment.getStatus());
+        }
+        for (var capture : response.getCapturesList()) {
+            System.out.println("Capture ID: " + capture.getCaptureId() + ", Capture Amount: " + capture.getAmountMinorUnits() + ", Capture Status: " + capture.getStatus());
         }
     }
 }
