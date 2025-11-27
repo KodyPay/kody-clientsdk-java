@@ -58,9 +58,24 @@ public class ExampleReleaseAuthorisation {
     // Helper method to process release authorisation response
     private static void processReleaseAuthResponse(ReleaseAuthorisationResponse response) {
         // Release is processed asynchronously, and the final status can be queried through the GetPreAuthorisation interface.
-        System.out.println("Release Ref: " + response.getReleaseReference());
-        System.out.println("Release Status: " + response.getStatus());
-        System.out.println("PspReference: " + response.getPspReference());
-        System.out.println("ReleasedAt: " + response.getReleasedAt());
+        System.out.println("Release Ref: " + response.getReleaseReference() + ", Status: " + response.getStatus());
+
+        switch (response.getStatus()) {
+            case RELEASED:
+                System.out.println("Release success: " + response.getReleaseReference());
+                System.out.println("PspReference: " + response.getPspReference());
+                System.out.println("PspReference: " + response.getPspReference());
+                System.out.println("ReleasedAt: " + response.getReleasedAt());
+                break;
+            case PENDING_RELEASE:
+                System.out.println("Release pending: " + response.getReleaseReference());
+                break;
+            case RELEASE_FAILED:
+                System.out.println("Release failed: " + response.getReleaseReference());
+                break;
+            case AUTH_STATUS_UNSPECIFIED, UNRECOGNIZED:
+                System.out.println("Release status unknown: " + response.getReleaseReference());
+                break;
+        }
     }
 }

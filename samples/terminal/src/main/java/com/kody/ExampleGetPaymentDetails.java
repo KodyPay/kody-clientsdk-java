@@ -33,19 +33,19 @@ public class ExampleGetPaymentDetails {
                 .build();
 
         PayResponse payResponse = paymentClient.paymentDetails(paymentDetailsRequest);
-
+        PayResponse.PaymentData paymentData = payResponse.getPaymentData();
         System.out.println("Payment details response: " + payResponse);
         System.out.println("Payment status: " + payResponse.getStatus());
-        System.out.println("Payment receipt json: " + payResponse.getReceiptJson());
+        System.out.println("Payment receipt json: " + paymentData.getReceiptJson());
         System.out.println("Payment order ID " + payResponse.getOrderId());
         System.out.println("Payment created timestamp: " + new Date(payResponse.getDateCreated().getSeconds() * 1000L));
         if (payResponse.getStatus() == PaymentStatus.SUCCESS) {
             System.out.println("Payment ext payment reference: " + payResponse.getPaymentReference());
-            System.out.println("Payment paid timestamp: " + new Date(payResponse.getDatePaid().getSeconds() * 1000L));
+            System.out.println("Payment paid timestamp: " + new Date(paymentData.getDatePaid().getSeconds() * 1000L));
         }
-        System.out.println("Payment total amount: " + payResponse.getTotalAmount());
-        System.out.println("Payment sale amount: " + payResponse.getSaleAmount());
-        System.out.println("Payment tips amount: " + payResponse.getTipsAmount());
+        System.out.println("Payment total amount: " + paymentData.getTotalAmount());
+        System.out.println("Payment sale amount: " + paymentData.getSaleAmount());
+        System.out.println("Payment tips amount: " + paymentData.getTipsAmount());
     }
 
     private static KodyPayTerminalServiceGrpc.KodyPayTerminalServiceBlockingStub createKodyTerminalPaymentsClient() {

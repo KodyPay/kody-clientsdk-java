@@ -69,13 +69,20 @@ public class ExampleRefundCapture {
         // There is no clear success status for refunds.
         // Generally, if REFUND_REQUESTED/REFUND_PENDING is returned, the refund request can be considered successful.
         // The actual success is subject to whether the user has received the refund.
-        System.out.println("Refund Ref: " + response.getRefundReference());
+        System.out.println("Refund Ref: " + response.getRefundReference() + ", Refund Status: " + response.getStatus());
 
-        if (response.getStatus() == RefundStatus.REFUND_REQUESTED || response.getStatus() == RefundStatus.REFUND_PENDING) {
-            System.out.println("PspReference: " + response.getPspReference());
-            System.out.println("RefundedAt: " +  response.getRefundedAt());
-        } else if (response.getStatus() == RefundStatus.REFUND_FAILED) {
-            System.out.println("Refund failed: " + response.getFailureReason());
+        switch (response.getStatus()) {
+            case REFUND_REQUESTED, REFUND_PENDING:
+                System.out.println("Refund requested/pending: " +  response.getRefundedAt());
+                System.out.println("PspReference: " + response.getPspReference());
+                System.out.println("RefundedAt: " +  response.getRefundedAt());
+                break;
+            case REFUND_FAILED:
+                System.out.println("Refund failed: " + response.getFailureReason());
+                break;
+            case REFUND_STATUS_UNSPECIFIED, UNRECOGNIZED:
+                System.out.println("Refund status unknown: " + response.getRefundReference());
+                break;
         }
     }
 }

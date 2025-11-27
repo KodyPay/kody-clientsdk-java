@@ -69,14 +69,21 @@ public class ExamplePreAuthoriseWithCardToken {
     // Helper method to process pre-authorisation response
     private static void processPreAuthResponse(PreAuthorisationResponse response) {
         System.out.println("PreAuth ID: " + response.getPreAuthId() + ", PreAuth Status: " + response.getStatus());
-
-        if (response.getStatus() == AuthStatus.AUTHORISED) {
-            System.out.println("PspReference: " + response.getPspReference());
-            System.out.println("Auth Code: " +  response.getAuthCode());
-        } else if (response.getStatus() == AuthStatus.PENDING_AUTHORISATION) {
-            System.out.println("Pre-Auth pending: " + response.getPreAuthId());
-        } else if (response.getStatus() == AuthStatus.FAILED) {
-            System.out.println("Pre-Auth failed: " + response.getPreAuthId());
+        switch (response.getStatus()) {
+            case AUTHORISED:
+                System.out.println("Pre-Auth success: " + response.getPreAuthId());
+                System.out.println("PspReference: " + response.getPspReference());
+                System.out.println("Auth Code: " +  response.getAuthCode());
+                break;
+            case PENDING_AUTHORISATION:
+                System.out.println("Pre-Auth pending: " + response.getPreAuthId());
+                break;
+            case FAILED, EXPIRED, CANCELLED, DECLINED:
+                System.out.println("Pre-Auth failed: " + response.getPreAuthId());
+                break;
+            case AUTH_STATUS_UNSPECIFIED, UNRECOGNIZED:
+                System.out.println("Pre-Auth status unknown: " + response.getPreAuthId());
+                break;
         }
     }
 }

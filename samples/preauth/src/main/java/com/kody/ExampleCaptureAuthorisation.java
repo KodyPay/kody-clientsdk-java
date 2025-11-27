@@ -67,10 +67,25 @@ public class ExampleCaptureAuthorisation {
     // Helper method to process capture authorisation response
     private static void processCaptureAuthResponse(CaptureAuthorisationResponse response) {
         // Capture is processed asynchronously, and the final status can be queried through the GetPreAuthorisation interface.
-        System.out.println("Capture Id: " + response.getCaptureId());
-        System.out.println("Capture Ref: " + response.getCaptureReference());
-        System.out.println("Capture Status: " + response.getStatus());
-        System.out.println("PspReference: " + response.getPspReference());
-        System.out.println("CapturedAt: " + response.getCapturedAt());
+        System.out.println("Capture Ref: " + response.getCaptureReference() + ", Status: " + response.getStatus());
+
+        switch (response.getStatus()) {
+            case CAPTURED:
+                System.out.println("Capture success: " + response.getCaptureReference());
+                System.out.println("Capture Id: " + response.getCaptureId());
+                System.out.println("PspReference: " + response.getPspReference());
+                System.out.println("CapturedAt: " + response.getCapturedAt());
+                break;
+            case PENDING_CAPTURE:
+                System.out.println("Capture pending: " + response.getCaptureReference());
+                System.out.println("Capture Id: " + response.getCaptureId());
+                break;
+            case CAPTURE_FAILED:
+                System.out.println("Capture failed: " + response.getCaptureReference());
+                break;
+            case AUTH_STATUS_UNSPECIFIED, UNRECOGNIZED:
+                System.out.println("Capture status unknown: " + response.getCaptureReference());
+                break;
+        }
     }
 }
