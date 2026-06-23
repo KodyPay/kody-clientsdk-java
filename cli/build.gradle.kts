@@ -4,13 +4,12 @@ plugins {
 
 description = "Kody Java gRPC Client Sample"
 
-val kodyClientVersion by extra("1.6.14")
-
-val protobufVersion by extra("4.27.3")
-val grpcVersion by extra("1.66.0")
-val log4jVersion by extra("2.23.0")
-val apacheCommonsVersion by extra("3.16.0")
-val jLineVersion by extra("3.26.3")
+val kodyClientVersion = "1.6.14"
+val protobufVersion = "4.27.3"
+val grpcVersion = "1.66.0"
+val log4jVersion = "2.23.0"
+val apacheCommonsVersion = "3.16.0"
+val jLineVersion = "3.26.3"
 
 repositories {
     mavenCentral()
