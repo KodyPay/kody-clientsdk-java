@@ -91,6 +91,6 @@ mavenPublishing {
 }
 
 tasks.withType<PublishToMavenRepository> {
-    mustRunAfter(rootProject.tasks.findByName("release"))
+    rootProject.tasks.findByName("release")?.let { mustRunAfter(it) }
     rootProject.tasks.findByName("postRelease")?.dependsOn(this)
 }
