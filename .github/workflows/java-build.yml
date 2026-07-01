@@ -61,6 +61,8 @@ jobs:
       ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.ORG_GRADLE_PROJECT_signingInMemoryKey }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_RELEASE }}
       - name: Checkout proto repository
         run: |
           git clone https://github.com/KodyPay/kp-protocols-clientsdk.git proto-repo
@@ -111,10 +113,6 @@ jobs:
       - name: Create Release
         uses: ncipollo/release-action@v1.14.0
         with:
-          # GH_RELEASE is a bypass-listed identity for the tag-protection
-          # ruleset; the default github-actions[bot] token is blocked
-          # ("creations being restricted") when creating the release tag.
-          token: ${{ secrets.GH_RELEASE }}
           name: "${{ needs.tagging.outputs.tag }}"
           tag: "${{ needs.tagging.outputs.tag }}"
           omitBody: true
