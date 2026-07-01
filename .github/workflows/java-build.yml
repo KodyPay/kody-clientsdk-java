@@ -62,7 +62,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_RELEASE }}
+          token: ${{ secrets.GH_PUB_RELEASE }}
       - name: Checkout proto repository
         run: |
           git clone https://github.com/KodyPay/kp-protocols-clientsdk.git proto-repo
