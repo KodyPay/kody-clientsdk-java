@@ -86,7 +86,7 @@ mavenPublishing {
             developerConnection = "scm:git:ssh://github.com/KodyPay/kody-clientsdk-java.git"
         }
         signAllPublications()
-        publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+        publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
     }
 }
 
